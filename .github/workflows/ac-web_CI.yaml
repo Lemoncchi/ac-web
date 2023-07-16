@@ -1,0 +1,41 @@
+# name指的是这套工作流程的名称，可以自定义
+name: ac-web_CI
+
+# on是指这套工作流程的trigger条件，即在push时触发
+on: [push]
+
+# jobs就是这套工作流程了
+jobs:
+  
+  # build相当于<job_id>,可以自定义
+  virtualenv_test:
+
+    # 指定该job_id下的运行环境
+    runs-on: ubuntu-latest
+    
+    # 制定运行步骤
+    steps:
+    # 先将仓库的代码checkout到环境中，github提供了checkout的方法，只需要我们加上这条即可
+    - uses: actions/checkout@v1
+    # 为接下来所执行的shell命名，可省略
+    - name: installing virtualenv
+      run: |
+        # 安装virtualenv
+        pip3 install virtualenv
+        # 创建虚拟环境
+        virtualenv venv
+        # 激活虚拟环境
+        source venv/bin/activate
+    - name: install dependencies
+      run:
+        # 安装所需要的依赖
+        pip3 install -r requirements.txt
+    - name: coverage test
+      run: 
+        # 运行测试用例
+        coverage run test_watchlist.py 
+    - name: generate report
+      run: 
+        # 生成测试报告
+        coverage report
+  
