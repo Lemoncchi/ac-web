@@ -6,7 +6,6 @@ from acweb import db
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20))
     username = db.Column(db.String(20))
     password_hash = db.Column(db.String(128))
 

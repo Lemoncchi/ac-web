@@ -14,7 +14,7 @@ class WatchlistTestCase(unittest.TestCase):
         )
         db.create_all()
 
-        user = User(name='Test', username='test')
+        user = User(username='test')
         user.set_password('123')
         movie = Movie(title='Test Movie Title', year='2019')
         db.session.add_all([user, movie])
@@ -49,7 +49,7 @@ class WatchlistTestCase(unittest.TestCase):
     def test_index_page(self):
         response = self.client.get('/')
         data = response.get_data(as_text=True)
-        self.assertIn('Test\'s Watchlist', data)
+        self.assertIn('test\'s 中传云盘', data)
         self.assertIn('Test Movie Title', data)
         self.assertEqual(response.status_code, 200)
 
@@ -128,14 +128,14 @@ class WatchlistTestCase(unittest.TestCase):
         self.assertIn('Your Name', data)
 
         response = self.client.post('/settings', data=dict(
-            name='',
+            username='',
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertNotIn('Settings updated.', data)
         self.assertIn('Invalid input.', data)
 
         response = self.client.post('/settings', data=dict(
-            name='Grey Li',
+            username='Grey Li',
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Settings updated.', data)
@@ -219,18 +219,18 @@ class WatchlistTestCase(unittest.TestCase):
         result = self.runner.invoke(initdb)
         self.assertIn('Initialized database.', result.output)
 
-    def test_admin_command(self):
+    def test_create_user_command(self):
         db.drop_all()
         db.create_all()
-        result = self.runner.invoke(args=['admin', '--username', 'grey', '--password', '123'])
+        result = self.runner.invoke(args=['create-user', '--username', 'grey', '--password', '123'])
         self.assertIn('Creating user...', result.output)
         self.assertIn('Done.', result.output)
         self.assertEqual(User.query.count(), 1)
         self.assertEqual(User.query.first().username, 'grey')
         self.assertTrue(User.query.first().validate_password('123'))
 
-    def test_admin_command_update(self):
-        result = self.runner.invoke(args=['admin', '--username', 'peter', '--password', '456'])
+    def test_create_user_command_update(self):
+        result = self.runner.invoke(args=['create-user', '--username', 'peter', '--password', '456'])
         self.assertIn('Updating user...', result.output)
         self.assertIn('Done.', result.output)
         self.assertEqual(User.query.count(), 1)
