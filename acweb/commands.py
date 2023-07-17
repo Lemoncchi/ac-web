@@ -17,9 +17,11 @@ def initdb(drop):
 @app.cli.command()
 def forge():
     """Generate fake data."""
+    db.drop_all()
     db.create_all()
 
-    name = 'Grey Li'
+    name = 'CUCer'
+    username = name
     movies = [
         {'title': 'My Neighbor Totoro', 'year': '1988'},
         {'title': 'Dead Poets Society', 'year': '1989'},
@@ -33,7 +35,8 @@ def forge():
         {'title': 'The Pork of Music', 'year': '2012'},
     ]
 
-    user = User(name=name)
+    user = User(name=name, username=username)
+    user.set_password('123')
     db.session.add(user)
     for m in movies:
         movie = Movie(title=m['title'], year=m['year'])
@@ -53,11 +56,13 @@ def admin(username, password):
     user = User.query.first()
     if user is not None:
         click.echo('Updating user...')
+        user.name = username
         user.username = username
         user.set_password(password)
     else:
         click.echo('Creating user...')
-        user = User(username=username, name='Admin')
+        name = username
+        user = User(username=username, name=name)
         user.set_password(password)
         db.session.add(user)
 

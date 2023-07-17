@@ -14,7 +14,7 @@ class WatchlistTestCase(unittest.TestCase):
         )
         db.create_all()
 
-        user = User(name='Test', username='test')
+        user = User(name='test', username='test')
         user.set_password('123')
         movie = Movie(title='Test Movie Title', year='2019')
         db.session.add_all([user, movie])
@@ -49,7 +49,7 @@ class WatchlistTestCase(unittest.TestCase):
     def test_index_page(self):
         response = self.client.get('/')
         data = response.get_data(as_text=True)
-        self.assertIn('Test\'s Watchlist', data)
+        self.assertIn('test\'s 中传云盘', data)
         self.assertIn('Test Movie Title', data)
         self.assertEqual(response.status_code, 200)
 
