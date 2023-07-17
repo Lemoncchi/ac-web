@@ -49,7 +49,7 @@ class WatchlistTestCase(unittest.TestCase):
     def test_index_page(self):
         response = self.client.get('/')
         data = response.get_data(as_text=True)
-        self.assertIn('test\'s 中传云盘', data)
+        self.assertIn('中传放心传', data)
         self.assertIn('Test Movie Title', data)
         self.assertEqual(response.status_code, 200)
 
@@ -68,6 +68,7 @@ class WatchlistTestCase(unittest.TestCase):
             password='123'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
+        self.assertIn("test's 中传云盘", data)
         self.assertIn('Login success.', data)
         self.assertIn('Logout', data)
         self.assertIn('Settings', data)

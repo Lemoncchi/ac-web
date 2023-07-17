@@ -75,6 +75,16 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 ![](.assets_img/README/flask_structure.png)
 
+---
+
+> 下面是在看完视频和直播课要求后，重新完成时的一些记录
+
+## `delete_name` 分支
+
+原项目由于在 `User` 类下既有 `name` 又有 `username` 字段，造成了后续代码的一些混乱，所以新建了 `delete_name` 分支，将 `name` 字段从整个项目逻辑中删除，只保留 `username` 字段
+
+![](.assets_img/READEME/delete_name_merge_request.png)
+
 ## 参考
 
 - [Quickstart Flask Documentation (2.3.x)](https://flask.palletsprojects.com/en/2.3.x/quickstart/)
