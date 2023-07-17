@@ -5,7 +5,7 @@ body {
     font-family: Helvetica, Arial, sans-serif;
 }
 
-.avatar {
+.cloud_drive_logo {
     width: 40px;
 }
 
@@ -112,15 +112,35 @@ input[name=year] {
     padding: 3px 5px;
 }
 
-.totoro {
+.cloud_loading {
     display: block;
     margin: 0 auto;
-    height: 100px;
+    height: 200px;
 }
 
 footer {
-    color: #888;
+    /* color: #888;
     margin-top: 15px;
     text-align: center;
-    padding: 10px;
+    padding: 10px; */
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: rgb(194, 217, 245);
+    color: white;
+    text-align: center;
+}
+
+footer a {
+    color: #535252;
+    /* 文本颜色 */
+    text-decoration: none;
+    /* 取消下划线 */
+    font-weight: bold;
+    /* 文本粗细 */
+    /* font-size: 14px; */
+    /* 文本大小 */
+    padding: 5px;
+    /* 空白边距 */
 }
