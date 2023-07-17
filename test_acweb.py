@@ -219,18 +219,18 @@ class WatchlistTestCase(unittest.TestCase):
         result = self.runner.invoke(initdb)
         self.assertIn('Initialized database.', result.output)
 
-    def test_admin_command(self):
+    def test_create_user_command(self):
         db.drop_all()
         db.create_all()
-        result = self.runner.invoke(args=['admin', '--username', 'grey', '--password', '123'])
+        result = self.runner.invoke(args=['create-user', '--username', 'grey', '--password', '123'])
         self.assertIn('Creating user...', result.output)
         self.assertIn('Done.', result.output)
         self.assertEqual(User.query.count(), 1)
         self.assertEqual(User.query.first().username, 'grey')
         self.assertTrue(User.query.first().validate_password('123'))
 
-    def test_admin_command_update(self):
-        result = self.runner.invoke(args=['admin', '--username', 'peter', '--password', '456'])
+    def test_create_user_command_update(self):
+        result = self.runner.invoke(args=['create-user', '--username', 'peter', '--password', '456'])
         self.assertIn('Updating user...', result.output)
         self.assertIn('Done.', result.output)
         self.assertEqual(User.query.count(), 1)
