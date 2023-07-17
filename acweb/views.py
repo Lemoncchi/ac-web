@@ -2,7 +2,7 @@ from flask import render_template, request, url_for, redirect, flash
 from flask_login import login_user, login_required, logout_user, current_user
 
 from acweb import app, db
-from acweb.models import User, Movie
+from acweb.models import User, CloudFile
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -11,50 +11,50 @@ def index():
         if not current_user.is_authenticated:
             return redirect(url_for('index'))
 
-        title = request.form['title']
+        file_name = request.form['file_name']
         year = request.form['year']
 
-        if not title or not year or len(year) != 4 or len(title) > 60:
+        if not file_name or not year or len(year) != 4 or len(file_name) > 60:
             flash('Invalid input.')
             return redirect(url_for('index'))
 
-        movie = Movie(title=title, year=year)
-        db.session.add(movie)
+        cloud_file = CloudFile(file_name=file_name, year=year)
+        db.session.add(cloud_file)
         db.session.commit()
         flash('Item created.')
         return redirect(url_for('index'))
 
-    movies = Movie.query.all()
-    return render_template('index.html', movies=movies)
+    cloud_files = CloudFile.query.all()
+    return render_template('index.html', cloud_files=cloud_files)
 
 
-@app.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
+@app.route('/cloud_file/edit/<int:cloud_file_id>', methods=['GET', 'POST'])
 @login_required
-def edit(movie_id):
-    movie = Movie.query.get_or_404(movie_id)
+def edit(cloud_file_id):
+    cloud_file = CloudFile.query.get_or_404(cloud_file_id)
 
     if request.method == 'POST':
-        title = request.form['title']
+        file_name = request.form['file_name']
         year = request.form['year']
 
-        if not title or not year or len(year) != 4 or len(title) > 60:
+        if not file_name or not year or len(year) != 4 or len(file_name) > 60:
             flash('Invalid input.')
-            return redirect(url_for('edit', movie_id=movie_id))
+            return redirect(url_for('edit', cloud_file_id=cloud_file_id))
 
-        movie.title = title
-        movie.year = year
+        cloud_file.file_name = file_name
+        cloud_file.year = year
         db.session.commit()
         flash('Item updated.')
         return redirect(url_for('index'))
 
-    return render_template('edit.html', movie=movie)
+    return render_template('edit.html', cloud_file=cloud_file)
 
 
-@app.route('/movie/delete/<int:movie_id>', methods=['POST'])
+@app.route('/cloud_file/delete/<int:cloud_file_id>', methods=['POST'])
 @login_required
-def delete(movie_id):
-    movie = Movie.query.get_or_404(movie_id)
-    db.session.delete(movie)
+def delete(cloud_file_id):
+    cloud_file = CloudFile.query.get_or_404(cloud_file_id)
+    db.session.delete(cloud_file)
     db.session.commit()
     flash('Item deleted.')
     return redirect(url_for('index'))

@@ -1,7 +1,7 @@
 import unittest
 
 from acweb import app, db
-from acweb.models import Movie, User
+from acweb.models import CloudFile, User
 from acweb.commands import forge, initdb
 
 
@@ -16,8 +16,8 @@ class WatchlistTestCase(unittest.TestCase):
 
         user = User(username='test')
         user.set_password('123')
-        movie = Movie(title='Test Movie Title', year='2019')
-        db.session.add_all([user, movie])
+        cloud_file = CloudFile(file_name='Test CloudFile Title', year='2019')
+        db.session.add_all([user, cloud_file])
         db.session.commit()
 
         self.client = app.test_client()
@@ -50,7 +50,7 @@ class WatchlistTestCase(unittest.TestCase):
         response = self.client.get('/')
         data = response.get_data(as_text=True)
         self.assertIn('中传放心传', data)
-        self.assertIn('Test Movie Title', data)
+        self.assertIn('Test CloudFile Title', data)
         self.assertEqual(response.status_code, 200)
 
     def test_login_protect(self):
@@ -146,15 +146,15 @@ class WatchlistTestCase(unittest.TestCase):
         self.login()
 
         response = self.client.post('/', data=dict(
-            title='New Movie',
+            file_name='New CloudFile',
             year='2019'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Item created.', data)
-        self.assertIn('New Movie', data)
+        self.assertIn('New CloudFile', data)
 
         response = self.client.post('/', data=dict(
-            title='',
+            file_name='',
             year='2019'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -162,7 +162,7 @@ class WatchlistTestCase(unittest.TestCase):
         self.assertIn('Invalid input.', data)
 
         response = self.client.post('/', data=dict(
-            title='New Movie',
+            file_name='New CloudFile',
             year=''
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -172,49 +172,49 @@ class WatchlistTestCase(unittest.TestCase):
     def test_update_item(self):
         self.login()
 
-        response = self.client.get('/movie/edit/1')
+        response = self.client.get('/cloud_file/edit/1')
         data = response.get_data(as_text=True)
         self.assertIn('Edit item', data)
-        self.assertIn('Test Movie Title', data)
+        self.assertIn('Test CloudFile Title', data)
         self.assertIn('2019', data)
 
-        response = self.client.post('/movie/edit/1', data=dict(
-            title='New Movie Edited',
+        response = self.client.post('/cloud_file/edit/1', data=dict(
+            file_name='New CloudFile Edited',
             year='2019'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Item updated.', data)
-        self.assertIn('New Movie Edited', data)
+        self.assertIn('New CloudFile Edited', data)
 
-        response = self.client.post('/movie/edit/1', data=dict(
-            title='',
+        response = self.client.post('/cloud_file/edit/1', data=dict(
+            file_name='',
             year='2019'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertNotIn('Item updated.', data)
         self.assertIn('Invalid input.', data)
 
-        response = self.client.post('/movie/edit/1', data=dict(
-            title='New Movie Edited Again',
+        response = self.client.post('/cloud_file/edit/1', data=dict(
+            file_name='New CloudFile Edited Again',
             year=''
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertNotIn('Item updated.', data)
-        self.assertNotIn('New Movie Edited Again', data)
+        self.assertNotIn('New CloudFile Edited Again', data)
         self.assertIn('Invalid input.', data)
 
     def test_delete_item(self):
         self.login()
 
-        response = self.client.post('/movie/delete/1', follow_redirects=True)
+        response = self.client.post('/cloud_file/delete/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Item deleted.', data)
-        self.assertNotIn('Test Movie Title', data)
+        self.assertNotIn('Test CloudFile Title', data)
 
     def test_forge_command(self):
         result = self.runner.invoke(forge)
         self.assertIn('Done.', result.output)
-        self.assertNotEqual(Movie.query.count(), 0)
+        self.assertNotEqual(CloudFile.query.count(), 0)
 
     def test_initdb_command(self):
         result = self.runner.invoke(initdb)

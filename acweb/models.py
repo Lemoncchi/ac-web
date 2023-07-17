@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from acweb import db
 
@@ -16,7 +18,11 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
-class Movie(db.Model):
+class CloudFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(60))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)  # 默认设置为当前时间
+    file_name = db.Column(db.String(60))
+    file_hash = db.Column(db.String(128))
+    file_size = db.Column(db.Integer)
+    is_shared = db.Column(db.Boolean, default=False)
     year = db.Column(db.String(4))

@@ -95,3 +95,6 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [Flask 入门教程](https://read.helloflask.com/)
 - [How to use Flask-Session in Python Flask ?](https://www.geeksforgeeks.org/how-to-use-flask-session-in-python-flask/)
 - [如何处理请求](https://dormousehole.readthedocs.io/en/latest/lifecycle.html#id5)(venvw)
+- [Flask 文件上传（四）：文件管理与多文件上传](https://zhuanlan.zhihu.com/p/24429519)
+- [Secret Key Encryption](https://pynacl.readthedocs.io/en/latest/secret/)
+- [PyCryptodome’s documentation](https://www.pycryptodome.org/)
