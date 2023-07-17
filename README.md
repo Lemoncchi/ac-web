@@ -4,6 +4,8 @@
 
 > 本仓库为密码学应用实践课程的课程项目 `中传放心传`，fork 自开源项目 [helloflask/watchlist](https://github.com/helloflask/watchlist)
 
+> 对比与原开源项目的差异，可参考 https://github.com/Mr-Nobodyl/ac-web/compare/master...dev
+
 ## 功能清单
 
 > 列表形式说明逐个功能要点。
