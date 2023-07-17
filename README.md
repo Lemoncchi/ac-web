@@ -31,7 +31,7 @@ $ git clone https://github.com/Mr-Nobodyl/ac-web.git
 $ cd ac-web
 ```
 
-create & active virtual enviroment then install dependencies:
+激活虚拟环境 & 安装依赖:
 
 ```
 $ python3 -m venv env  # use `python ...` on Windows
@@ -39,10 +39,10 @@ $ source env/bin/activate  # use `env\Scripts\activate` on Windows
 (env) $ pip install -r requirements.txt
 ```
 
-generate fake data then run:
+初始化数据库并生成测试数据:
 
 ```
-(env) $ flask forge
+(env) $ flask forge  # 初始用户名为: CUCer 密码: 123456
 (env) $ flask run
 * Running on http://127.0.0.1:5000/
 ```

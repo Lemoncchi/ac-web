@@ -16,11 +16,11 @@ def initdb(drop):
 
 @app.cli.command()
 def forge():
-    """Generate fake data."""
+    """生成虚拟测试数据 & 创建用户 CUCer"""
     db.drop_all()
     db.create_all()
 
-    username = 'Grey Li'
+    username = 'CUCer'
     movies = [
         {'title': 'My Neighbor Totoro', 'year': '1988'},
         {'title': 'Dead Poets Society', 'year': '1989'},
@@ -35,6 +35,7 @@ def forge():
     ]
 
     user = User(username=username)
+    user.set_password('123456')
     db.session.add(user)
     for m in movies:
         movie = Movie(title=m['title'], year=m['year'])
