@@ -64,14 +64,14 @@ def delete(movie_id):
 @login_required
 def settings():
     if request.method == 'POST':
-        name = request.form['name']
+        username = request.form['username']
 
-        if not name or len(name) > 20:
+        if not username or len(username) > 20:
             flash('Invalid input.')
             return redirect(url_for('settings'))
 
         user = User.query.first()
-        user.name = name
+        user.username = username
         db.session.commit()
         flash('Settings updated.')
         return redirect(url_for('index'))

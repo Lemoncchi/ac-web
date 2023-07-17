@@ -4,7 +4,7 @@
     {% block head %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user.name }}'s 中传云盘</title>
+    <title>{{ user.username }}'s 中传云盘</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
     {% endblock %}
@@ -15,7 +15,7 @@
     {% endfor %}
     <h2>
         <img alt="Cloud Drive Logo" class="cloud_drive_logo" src="{{ url_for('static', filename='images/cloud_drive_logo.png') }}">
-        {{ user.name }}'s 中传云盘
+        {{ user.username }}'s 中传云盘
     </h2>
     <nav>
         <ul>
