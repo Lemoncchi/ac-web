@@ -33,7 +33,7 @@ jobs:
     - name: coverage test
       run: 
         # 运行测试用例
-        coverage run test_watchlist.py 
+        coverage run --source=acweb test_acweb.py 
     - name: generate report
       run: 
         # 生成测试报告

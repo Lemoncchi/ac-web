@@ -1,6 +1,6 @@
 from flask import render_template
 
-from watchlist import app
+from acweb import app
 
 
 @app.errorhandler(400)

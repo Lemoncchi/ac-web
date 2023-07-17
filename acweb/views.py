@@ -1,8 +1,8 @@
 from flask import render_template, request, url_for, redirect, flash
 from flask_login import login_user, login_required, logout_user, current_user
 
-from watchlist import app, db
-from watchlist.models import User, Movie
+from acweb import app, db
+from acweb.models import User, Movie
 
 
 @app.route('/', methods=['GET', 'POST'])

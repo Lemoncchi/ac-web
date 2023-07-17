@@ -1,7 +1,7 @@
 import click
 
-from watchlist import app, db
-from watchlist.models import User, Movie
+from acweb import app, db
+from acweb.models import User, Movie
 
 
 @app.cli.command()
