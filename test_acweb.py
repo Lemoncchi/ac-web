@@ -9,25 +9,27 @@ from acweb.models import CloudFile, User
 class AcWebTestCase(unittest.TestCase):
 
     def setUp(self):
-        app.config.update(
-            TESTING=True,
-            SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
-        )
-        db.create_all()
+        with app.test_request_context():
+            app.config.update(
+                TESTING=True,
+                SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
+            )
+            db.create_all()
 
-        user = User(username='test')
-        user.set_password('123')
-        db.session.add(user)
-        db.session.commit()
+            user = User(username='test')
+            user.set_password('123')
+            db.session.add(user)
+            db.session.commit()
 
-        cloud_file = CloudFile.save_encrypt_commit(file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
+            cloud_file = CloudFile.save_encrypt_commit(file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
 
-        self.client = app.test_client()
-        self.runner = app.test_cli_runner()
+            self.client = app.test_client()
+            self.runner = app.test_cli_runner()
 
     def tearDown(self):
-        db.session.remove()
-        db.drop_all()
+        with app.test_request_context():
+            db.session.remove()
+            db.drop_all()
 
     def login(self):
         self.client.post('/login', data=dict(
@@ -214,31 +216,34 @@ class AcWebTestCase(unittest.TestCase):
         self.assertNotIn('Test CloudFile Title', data)
 
     def test_forge_command(self):
-        result = self.runner.invoke(forge)
-        self.assertIn('Done.', result.output)
-        self.assertNotEqual(CloudFile.query.count(), 0)
+        with app.test_request_context():
+            result = self.runner.invoke(forge)
+            self.assertIn('Done.', result.output)
+            self.assertNotEqual(db.session.query(CloudFile).count(), 0)
 
-    def test_initdb_command(self):
-        result = self.runner.invoke(initdb)
-        self.assertIn('Initialized database.', result.output)
+            def test_initdb_command(self):
+                result = self.runner.invoke(initdb)
+                self.assertIn('Initialized database.', result.output)
 
     def test_create_user_command(self):
-        db.drop_all()
-        db.create_all()
-        result = self.runner.invoke(args=['create-user', '--username', 'grey', '--password', '123'])
-        self.assertIn('Creating user...', result.output)
-        self.assertIn('Done.', result.output)
-        self.assertEqual(User.query.count(), 1)
-        self.assertEqual(User.query.first().username, 'grey')
-        self.assertTrue(User.query.first().validate_password('123'))
+        with app.test_request_context():
+            db.drop_all()
+            db.create_all()
+            result = self.runner.invoke(args=['create-user', '--username', 'grey', '--password', '123'])
+            self.assertIn('Creating user...', result.output)
+            self.assertIn('Done.', result.output)
+            self.assertEqual(User.query.count(), 1)
+            self.assertEqual(User.query.first().username, 'grey')
+            self.assertTrue(User.query.first().validate_password('123'))
 
     def test_create_user_command_update(self):
-        result = self.runner.invoke(args=['create-user', '--username', 'peter', '--password', '456'])
-        self.assertIn('Updating user...', result.output)
-        self.assertIn('Done.', result.output)
-        self.assertEqual(User.query.count(), 1)
-        self.assertEqual(User.query.first().username, 'peter')
-        self.assertTrue(User.query.first().validate_password('456'))
+        with app.test_request_context():
+            result = self.runner.invoke(args=['create-user', '--username', 'peter', '--password', '456'])
+            self.assertIn('Updating user...', result.output)
+            self.assertIn('Done.', result.output)
+            self.assertEqual(User.query.count(), 1)
+            self.assertEqual(User.query.first().username, 'peter')
+            self.assertTrue(User.query.first().validate_password('456'))
 
 
 if __name__ == '__main__':

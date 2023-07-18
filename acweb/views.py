@@ -1,8 +1,8 @@
-from flask import render_template, request, url_for, redirect, flash
-from flask_login import login_user, login_required, logout_user, current_user
+from flask import abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 
 from acweb import app, db
-from acweb.models import User, CloudFile
+from acweb.models import CloudFile, User
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -52,7 +52,10 @@ def uploads():
 @app.route('/cloud_file/edit/<int:cloud_file_id>', methods=['GET', 'POST'])
 @login_required
 def edit(cloud_file_id):
-    cloud_file = CloudFile.query.get_or_404(cloud_file_id)
+    # cloud_file = CloudFile.query.get_or_404(cloud_file_id)
+    cloud_file = db.session.get(CloudFile, cloud_file_id)
+    if cloud_file is None:
+        abort(404)
 
     if request.method == 'POST':
         file_name = request.form['file_name']
@@ -74,7 +77,10 @@ def edit(cloud_file_id):
 @app.route('/cloud_file/delete/<int:cloud_file_id>', methods=['POST'])
 @login_required
 def delete(cloud_file_id):
-    cloud_file = CloudFile.query.get_or_404(cloud_file_id)
+    # cloud_file = CloudFile.query.get_or_404(cloud_file_id)
+    cloud_file = db.session.get(CloudFile, cloud_file_id)
+    if cloud_file is None:
+        abort(404)
     db.session.delete(cloud_file)
     db.session.commit()
     flash('Item deleted.')
