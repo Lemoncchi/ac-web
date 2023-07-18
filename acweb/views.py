@@ -77,13 +77,10 @@ def edit(cloud_file_id):
 @app.route('/cloud_file/delete/<int:cloud_file_id>', methods=['POST'])
 @login_required
 def delete(cloud_file_id):
-    # cloud_file = CloudFile.query.get_or_404(cloud_file_id)
-    cloud_file = db.session.get(CloudFile, cloud_file_id)
-    if cloud_file is None:
-        abort(404)
-    db.session.delete(cloud_file)
-    db.session.commit()
-    flash('Item deleted.')
+    if CloudFile.delete_uncommit(cloud_file_id):
+        flash('Item deleted.')
+    else:
+        flash('Error! Item not found.')
     return redirect(url_for('index'))
 
 
