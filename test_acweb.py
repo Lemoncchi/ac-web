@@ -57,7 +57,15 @@ class AcWebTestCase(unittest.TestCase):
         response = self.client.get('/')
         data = response.get_data(as_text=True)
         self.assertIn('中传放心传', data)
+        self.assertNotIn('Test CloudFile Title', data)
+        self.assertNotIn('myDropzone', data)
+        self.assertEqual(response.status_code, 200)
+
+        self.login()
+        response = self.client.get('/')
+        data = response.get_data(as_text=True)
         self.assertIn('Test CloudFile Title', data)
+        self.assertIn('myDropzone', data)
         self.assertEqual(response.status_code, 200)
 
     def test_login_protect(self):

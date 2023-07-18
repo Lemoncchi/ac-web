@@ -48,7 +48,7 @@ def uploads():
 
             content_bytes = f.read()
 
-            cloud_file = CloudFile.save_encrypt_commit(file_name, content_bytes)
+            cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name, content_bytes)
 
             flash('Your file has been uploaded successfully.')
             return redirect(url_for('index'))
