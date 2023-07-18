@@ -1,6 +1,8 @@
 import os
 import unittest
 
+os.environ['DATABASE_URI'] = 'sqlite:///:memory:'
+
 from acweb import app, db
 from acweb.commands import forge, initdb
 from acweb.models import CloudFile, User
