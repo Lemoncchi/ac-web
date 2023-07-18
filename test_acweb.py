@@ -69,18 +69,18 @@ class AcWebTestCase(unittest.TestCase):
         self.assertNotIn('Delete', data)
         self.assertNotIn('Edit', data)
 
-    # def test_login(self):
-    #     response = self.client.post('/login', data=dict(
-    #         username='test',
-    #         password='123'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertIn("test's 中传云盘", data)
-    #     self.assertIn('Login success.', data)
-    #     self.assertIn('Logout', data)
-    #     self.assertIn('Settings', data)
-    #     self.assertIn('Delete', data)
-    #     self.assertIn('Edit', data)
+    def test_login(self):
+        response = self.client.post('/login', data=dict(
+            username='test',
+            password='123'
+        ), follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertIn("test's 中传云盘", data)
+        self.assertIn('Login success.', data)
+        self.assertIn('Logout', data)
+        self.assertIn('Settings', data)
+        self.assertIn('Delete', data)
+        self.assertIn('Edit', data)
     #     self.assertIn('<form method="post">', data)
 
     #     response = self.client.post('/login', data=dict(
