@@ -22,13 +22,14 @@ class User(db.Model, UserMixin):
 
 class CloudFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)  # 默认设置为当前时间
     file_name = db.Column(db.String(60))
     file_save_name = db.Column(db.String(60))
     file_hash = db.Column(db.String(128))
     file_size = db.Column(db.Integer)
     is_shared = db.Column(db.Boolean, default=False)
-    # year = db.Column(db.String(4))
+
 
     def __repr__(self):
         return f'<CloudFile {self.file_name}, {self.file_save_name}, {self.cloud_file.file_hash}, {self.cloud_file.file_size}>'
@@ -45,8 +46,8 @@ class CloudFile(db.Model):
             'is_shared': self.is_shared
         }
     
-    @classmethod
-    def save_encrypt_commit(cls, file_name_, content_bytes_:bytes, is_shared_=False):
+    @staticmethod
+    def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes, is_shared_=False):
         """保存文件元数据到数据库 & 保存加密后的文件到本地
         """
         file_save_name = file_name_  # TODO: 后面需要对文件名进行处理
@@ -59,7 +60,7 @@ class CloudFile(db.Model):
 
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], file_save_name)
 
-        cloud_file = CloudFile(file_name=file_name_, file_save_name=file_save_name, file_hash=file_hash_, file_size=file_size_, is_shared=is_shared_)
+        cloud_file = CloudFile(user_id=user_id, file_name=file_name_, file_save_name=file_save_name, file_hash=file_hash_, file_size=file_size_, is_shared=is_shared_)
         db.session.add(cloud_file)
         db.session.commit()
 
@@ -68,9 +69,9 @@ class CloudFile(db.Model):
 
         return cloud_file
     
-    
-    @classmethod
-    def delete_uncommit(cls, cloud_file_id_:int):
+
+    @staticmethod
+    def delete_uncommit(cloud_file_id_:int):
         """删除数据库中的文件元数据 & 删除本地的加密后的文件
         """
         cloud_file = db.session.get(CloudFile, cloud_file_id_)
@@ -85,3 +86,27 @@ class CloudFile(db.Model):
         db.session.commit()
 
         return True
+
+
+    def decrypt(self) -> bytes:
+        """对文件内容进行解密"""
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], self.file_save_name)
+
+        with open(file_path, "rb") as f:
+            encrypted_content_bytes = f.read()
+
+        # TODO: 对文件进行解密
+        self.decrypted_content_bytes = encrypted_content_bytes
+
+        return self.decrypted_content_bytes
+
+
+    def get_size_str(self) -> str:
+        import math
+        if self.file_size == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(self.file_size, 1024)))
+        p = math.pow(1024, i)
+        s = round(self.file_size / p, 2)
+        return f"{s} {size_name[i]}"

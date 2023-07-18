@@ -144,3 +144,8 @@ footer a {
     padding: 5px;
     /* 空白边距 */
 }
+
+.file_size_str {
+    color: gray;
+    font-size: 14px;
+}

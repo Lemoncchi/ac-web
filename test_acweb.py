@@ -23,7 +23,7 @@ class AcWebTestCase(unittest.TestCase):
             db.session.add(user)
             db.session.commit()
 
-            cloud_file = CloudFile.save_encrypt_commit(file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
+            cloud_file = CloudFile.save_encrypt_commit(user_id=user.id, file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
             self.test_cloud_file_id = cloud_file.id
             self.client = app.test_client()
             self.runner = app.test_cli_runner()
@@ -57,7 +57,15 @@ class AcWebTestCase(unittest.TestCase):
         response = self.client.get('/')
         data = response.get_data(as_text=True)
         self.assertIn('中传放心传', data)
+        self.assertNotIn('Test CloudFile Title', data)
+        self.assertNotIn('myDropzone', data)
+        self.assertEqual(response.status_code, 200)
+
+        self.login()
+        response = self.client.get('/')
+        data = response.get_data(as_text=True)
         self.assertIn('Test CloudFile Title', data)
+        self.assertIn('myDropzone', data)
         self.assertEqual(response.status_code, 200)
 
     def test_login_protect(self):

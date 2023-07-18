@@ -1,4 +1,8 @@
-from flask import abort, flash, redirect, render_template, request, url_for
+import os
+from io import BytesIO
+
+from flask import (abort, flash, redirect, render_template, request, send_file,
+                   url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from acweb import app, db
@@ -36,6 +40,7 @@ def uploads():
         f = request.files.get('file')
         if f is None:
             flash('No file part')
+            return redirect(url_for('index'))
         else:
             file_name = f.filename
 
@@ -43,11 +48,12 @@ def uploads():
 
             content_bytes = f.read()
 
-            cloud_file = CloudFile.save_encrypt_commit(file_name, content_bytes)
+            cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name, content_bytes)
 
             flash('Your file has been uploaded successfully.')
             return redirect(url_for('index'))
 
+    return redirect(url_for('index'))
 
 @app.route('/cloud_file/edit/<int:cloud_file_id>', methods=['GET', 'POST'])
 @login_required
@@ -82,6 +88,63 @@ def delete(cloud_file_id):
     else:
         flash('Error! Item not found.')
     return redirect(url_for('index'))
+
+
+@app.route("/cloud_file/downloads/content/<int:cloud_file_id>", methods=["GET", "POST"])
+def download_content(cloud_file_id: int):
+    """下载文件内容"""
+    cloud_file = db.session.get(CloudFile, cloud_file_id)
+    if cloud_file is None:
+        abort(404)
+
+    if cloud_file.is_shared:
+        # TODO: 检查是否过期
+        if cloud_file.is_expired:
+            flash('Expired! Forbidden.')
+            abort(403)  # Forbidden
+
+    else: # 私人非共享文件
+        if current_user.is_authenticated:
+            if current_user.id != cloud_file.user_id:
+                flash('Forbidden.')
+                abort(403)  # Forbidden
+        else:
+            redirect(url_for('login'))
+
+    cloud_file.decrypt()
+
+    return send_file(
+        path_or_file=BytesIO(cloud_file.decrypted_content_bytes),
+        download_name=cloud_file.file_name,
+        as_attachment=True,
+    )
+
+@app.route("/cloud_file/downloads/hash/<int:cloud_file_id>", methods=["GET", "POST"])
+def download_hash(cloud_file_id: int):
+    """下载文件 hash"""
+    cloud_file = db.session.get(CloudFile, cloud_file_id)
+    if cloud_file is None:
+        abort(404)
+    
+    if cloud_file.is_shared:
+        # TODO: 检查是否过期
+        if cloud_file.is_expired:
+            flash('Expired! Forbidden.')
+            abort(403)  # Forbidden
+
+    else: # 私人非共享文件
+        if current_user.is_authenticated:
+            if current_user.id != cloud_file.user_id:
+                flash('Forbidden.')
+                abort(403)  # Forbidden
+        else:
+            redirect(url_for('login'))
+
+    return send_file(
+        path_or_file=BytesIO(bytes(cloud_file.file_hash, 'ascii')),
+        download_name=cloud_file.file_name,
+        as_attachment=True,
+    )
 
 
 @app.route('/settings', methods=['GET', 'POST'])
