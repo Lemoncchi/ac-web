@@ -85,3 +85,16 @@ class CloudFile(db.Model):
         db.session.commit()
 
         return True
+
+
+    def decrypt(self) -> bytes:
+        """对文件内容进行解密"""
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], self.file_save_name)
+
+        with open(file_path, "rb") as f:
+            encrypted_content_bytes = f.read()
+
+        # TODO: 对文件进行解密
+        self.decrypted_content_bytes = encrypted_content_bytes
+
+        return self.decrypted_content_bytes

@@ -1,4 +1,7 @@
-from flask import abort, flash, redirect, render_template, request, url_for
+import os
+
+from flask import (abort, flash, redirect, render_template, request, send_file,
+                   url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from acweb import app, db
@@ -82,6 +85,24 @@ def delete(cloud_file_id):
     else:
         flash('Error! Item not found.')
     return redirect(url_for('index'))
+
+
+@app.route("/cloud_file/downloads/<int:cloud_file_id>", methods=["GET", "POST"])
+def download(cloud_file_id):
+    """下载文件"""
+    cloud_file = db.session.get(CloudFile, cloud_file_id)
+    if cloud_file is None:
+        abort(404)
+
+    cloud_file.decrypt()
+
+    from io import BytesIO
+
+    return send_file(
+        path_or_file=BytesIO(cloud_file.decrypted_content_bytes),
+        download_name=cloud_file.file_name,
+        as_attachment=True,
+    )
 
 
 @app.route('/settings', methods=['GET', 'POST'])
