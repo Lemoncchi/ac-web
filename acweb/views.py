@@ -126,6 +126,46 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        print(request.form)
+        username = request.form['username']
+        password = request.form['psw']
+        password_repeated = request.form['psw-repeat']
+
+        if not username or not password:
+            flash('Invalid input.')
+            return redirect(url_for('register'))
+        
+        if password != password_repeated:
+            flash('Password not match.')
+            return redirect(url_for('register'))
+
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists.')
+            return redirect(url_for('register'))
+
+        if len(username) > app.config['MAX_USERNAME_LENGTH']:
+            flash('Username too long.')
+            return redirect(url_for('register'))
+        if len(password) > app.config['MAX_PASSWORD_LENGTH']:
+            flash('Password too long.')
+            return redirect(url_for('register'))
+
+        # TODO: 密码强度校验
+
+        user = User(username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+
+        flash('Registration success.')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+
 @app.route('/logout')
 @login_required
 def logout():
