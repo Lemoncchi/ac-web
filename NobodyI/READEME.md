@@ -98,3 +98,5 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [Flask 文件上传（四）：文件管理与多文件上传](https://zhuanlan.zhihu.com/p/24429519)
 - [Secret Key Encryption](https://pynacl.readthedocs.io/en/latest/secret/)
 - [PyCryptodome’s documentation](https://www.pycryptodome.org/)
+- [flask-drop](https://flask-dropzone.readthedocs.io/en/latest/basic.html)
+- [正确理解Python中的 @staticmethod@classmethod方法](https://zhuanlan.zhihu.com/p/28010894)

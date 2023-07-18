@@ -1,7 +1,10 @@
+import os
+import shutil
+
 import click
 
 from acweb import app, db
-from acweb.models import User, CloudFile
+from acweb.models import CloudFile, User
 
 
 @app.cli.command()
@@ -17,31 +20,33 @@ def initdb(drop):
 @app.cli.command()
 def forge():
     """生成虚拟测试数据 & 创建用户 CUCer"""
+
+    # 如果数据库中已经有数据，先删除
     db.drop_all()
     db.create_all()
 
-    username = 'CUCer'
-    cloud_files = [
-        {'file_name': 'My Neighbor Totoro', 'year': '1988'},
-        {'file_name': 'Dead Poets Society', 'year': '1989'},
-        {'file_name': 'A Perfect World', 'year': '1993'},
-        {'file_name': 'Leon', 'year': '1994'},
-        {'file_name': 'Mahjong', 'year': '1996'},
-        {'file_name': 'Swallowtail Butterfly', 'year': '1996'},
-        {'file_name': 'King of Comedy', 'year': '1999'},
-        {'file_name': 'Devils on the Doorstep', 'year': '1999'},
-        {'file_name': 'WALL-E', 'year': '2008'},
-        {'file_name': 'The Pork of Music', 'year': '2012'},
-    ]
+    # 删除 uploads 文件夹中的所有文件
+    for file_name in os.listdir(app.config['UPLOAD_FOLDER']):
+        upload_file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
+        if os.path.isfile(upload_file_path):
+            os.remove(upload_file_path)
 
+    # 新建默认用户
+    username = 'CUCer'
     user = User(username=username)
     user.set_password('123456')
     db.session.add(user)
-    for m in cloud_files:
-        cloud_file = CloudFile(file_name=m['file_name'], year=m['year'])
-        db.session.add(cloud_file)
-
     db.session.commit()
+
+    # 将测试文件复制到 uploads 文件夹中
+    example_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'example_files')
+    for root, dirs, files in os.walk(example_file_path):
+        for file_name in files:
+            file_path = os.path.join(root,file_name)
+            with open(file_path, 'rb') as f:
+                file_content = f.read()
+                cloud_file = CloudFile.save_encrypt_commit(file_name, file_content)
+
     click.echo('Done.')
 
 

@@ -2,8 +2,10 @@ import os
 import sys
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from flask_dropzone import Dropzone
 from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
+
 
 # SQLite URI compatible
 WIN = sys.platform.startswith('win')
@@ -16,10 +18,28 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
 app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(os.path.dirname(app.root_path), os.getenv('DATABASE_FILE', 'data.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', os.path.join(app.root_path,'uploads'))
+app.config["ALLOWED_FILE_EXTENSIONS"] = os.getenv(
+    "ALLOWED_FILE_EXTENSIONS",
+    [
+        "jpg",
+        "jpeg",
+        "png",
+        "bmp",
+        "gif",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+        "ppt",
+        "pptx",
+        "pdf",
+    ],
+)
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
-
+dropzone = Dropzone(app)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -39,4 +59,4 @@ def inject_user():
     return dict(user=user)
 
 
-from acweb import views, errors, commands
+from acweb import commands, errors, views

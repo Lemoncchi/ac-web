@@ -9,3 +9,5 @@ htmlcov/
 venv
 env
 flask_session
+uploads/
+!uploads/example_files/

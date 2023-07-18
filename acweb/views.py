@@ -28,6 +28,27 @@ def index():
     return render_template('index.html', cloud_files=cloud_files)
 
 
+@app.route('/uploads', methods=['POST'])
+@login_required
+def uploads():
+    import os
+    if request.method == 'POST':
+        f = request.files.get('file')
+        if f is None:
+            flash('No file part')
+        else:
+            file_name = f.filename
+
+            # TODO: 检查文件类型（后缀）
+
+            content_bytes = f.read()
+
+            cloud_file = CloudFile.save_encrypt_commit(file_name, content_bytes)
+
+            flash('Your file has been uploaded successfully.')
+            return redirect(url_for('index'))
+
+
 @app.route('/cloud_file/edit/<int:cloud_file_id>', methods=['GET', 'POST'])
 @login_required
 def edit(cloud_file_id):
