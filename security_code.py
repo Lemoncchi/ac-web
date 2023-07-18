@@ -9,23 +9,26 @@ from Crypto.Signature import pkcs1_15
 # 对称密钥生成
 def symmetric_generate():
     key = get_random_bytes(32)
-    cipher = AES.new(key)
-    return cipher
+    return key
 
 
 # 对称加密
-def symmetric_encode(data, cipher):
+def symmetric_encode(data, key):
+    cipher = AES.new(key)
     return cipher.encrypt(data)
 
 
 # 对称解密
-def symmetric_decode(data_encode, cipher):
+def symmetric_decode(data_encode, key):
+    cipher = AES.new(key)
     return cipher.decrypt(data_encode)
 
 
 # 哈希
 def hash_code(data):
-    return SHA256.new(data)
+    data_hash = SHA256.new(data)
+    s_data = data_hash.hexdigest()
+    return s_data
 
 
 # 非对称公私钥对生成
