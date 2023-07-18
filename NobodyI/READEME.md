@@ -132,3 +132,5 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [How TO - Login Form](https://www.w3schools.com/howto/howto_css_login_form.asp)
 - [HTML <a> download Attribute](https://www.w3schools.com/tags/att_a_download.asp)
 - [Uploading and Downloading Files in Flask](https://www.geeksforgeeks.org/uploading-and-downloading-files-in-flask/)
+- [Creating bytesIO object](https://stackoverflow.com/questions/39799009/creating-bytesio-object)
+- [Static method returning an instance of its class](https://stackoverflow.com/questions/19792112/static-method-returning-an-instance-of-its-class)
