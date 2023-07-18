@@ -79,11 +79,37 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 > 下面是在看完视频和直播课要求后，重新完成时的一些记录
 
-## `delete_name` 分支
+## [`delete_name` 分支](https://github.com/Mr-Nobodyl/ac-web/pull/1)
 
 原项目由于在 `User` 类下既有 `name` 又有 `username` 字段，造成了后续代码的一些混乱，所以新建了 `delete_name` 分支，将 `name` 字段从整个项目逻辑中删除，只保留 `username` 字段
 
 ![](.assets_img/READEME/delete_name_merge_request.png)
+
+## [`update_pkg` 分支](https://github.com/Mr-Nobodyl/ac-web/pull/2)
+
+由于原项目中的 `requirements.txt` 文件中的包版本过低，我担心其会造成一些安全问题，而且很可能过几年后这些包的版本会过时，所以我将其更新到了最新版本
+
+当然在这其中也遇到了一些问题，比如 `Flask` 的版本更新到了最新后，需要强制使用 `app.context`，`flask-sqlalchemy` 也将 `Query` 归为了 `deprecating`，所以改为使用 `session.query` 来代替
+
+## sqlite3 数据库
+
+在后面遇到了一个小 bug：在服务器运行的过程中，如果运行 `test_acweb.py` 单元测试，再次访问页面将会出现 `Internal Server Error`
+
+![](.assets_img/READEME/Internal_Server_Error.png)
+
+后面 `debug` 了一会才发现，在 `test_acweb.py` 的单元测试中，原本将 `sqlite3` 使用内存数据库，但是在更新包版本后，[这段代码](https://github.com/Mr-Nobodyl/ac-web/blob/7bcd0744d373d271c2bc5d56c95eea7865a50b3a/test_acweb.py#L13) 并没有成功更新 `SQLALCHEMY_DATABASE_URI`，从而导致在测试时使用的是原本文件系统中的 `sqlite3` 数据库，而不是内存数据库
+
+虽然这个 `bug` 其实感觉也无伤大雅——只要在 web 程序运行时时不运行 `test_acweb.py` 单元测试就不会出现这个问题，但是还是感觉不爽想要解决一下
+
+然后在修复时，尝试了几种办法都没有成功，最后参考了这篇 Stack Overflow 的 [回答](https://stackoverflow.com/questions/43466927/sqlalchemy-database-uri-not-set)，在 `__init__` 只是初始化 `SQLAlchemy`，在 `test_acweb.py` 中再进行 `SQLAlchemy` 实例与 `app` 的绑定
+
+本以为已经解决了这个问题，但是发现在运行 `flask run` 时又出错了——>上面的解决方法将会导致 `SQLAlchemy` 实例与 `app` 的绑定在 `test_acweb.py` 中，而不是在 `__init__` 中，其他程序从 `acweb` 中导入 `db` 时将会导入没有与 `app` 绑定的 `db`
+
+想了几种解决方案，最后，突然想到了程序设计模式中的 `工厂模式`，对！就是 `app_factory`！
+
+参考 [Flask - Application Factories](https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/) 解决
+
+这里研究了一段时间，但是如果要使用 `工厂模式` 对 `app` 进行初始化的话，整个项目的架构的很多地方都需要做相应的修改，所以最后还是放弃了使用 `工厂模式`，而是使用 `环境变量` 的一个小 `trick` 来解决了这个问题（但是我在想这个问题归根到底应该还是 `SQLAcademy 2.0` 的一个小 bug，没有像 1.0 版本中在 app.update 中成功更新 `SQLALCHEMY_DATABASE_URI`）
 
 ## 参考
 
@@ -100,3 +126,5 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [PyCryptodome’s documentation](https://www.pycryptodome.org/)
 - [flask-drop](https://flask-dropzone.readthedocs.io/en/latest/basic.html)
 - [正确理解Python中的 @staticmethod@classmethod方法](https://zhuanlan.zhihu.com/p/28010894)
+- [Flask - Application Factories](https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/)
+- [Flask 配置](https://spacewander.github.io/explore-flask-zh/5-configuration.html)
