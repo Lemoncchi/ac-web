@@ -45,8 +45,8 @@ class CloudFile(db.Model):
             'is_shared': self.is_shared
         }
     
-    @classmethod
-    def save_encrypt_commit(cls, file_name_, content_bytes_:bytes, is_shared_=False):
+    @staticmethod
+    def save_encrypt_commit(file_name_, content_bytes_:bytes, is_shared_=False):
         """保存文件元数据到数据库 & 保存加密后的文件到本地
         """
         file_save_name = file_name_  # TODO: 后面需要对文件名进行处理
@@ -69,8 +69,8 @@ class CloudFile(db.Model):
         return cloud_file
     
     
-    @classmethod
-    def delete_uncommit(cls, cloud_file_id_:int):
+    @staticmethod
+    def delete_uncommit(cloud_file_id_:int):
         """删除数据库中的文件元数据 & 删除本地的加密后的文件
         """
         cloud_file = db.session.get(CloudFile, cloud_file_id_)
