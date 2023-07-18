@@ -2,6 +2,11 @@ import os
 import unittest
 
 os.environ['DATABASE_URI'] = 'sqlite:///:memory:'
+os.environ["UPLOAD_FOLDER"] = os.path.join(
+    os.path.dirname(__file__), "acweb", "uploads", "test_uploads"
+)
+if not os.path.exists(os.environ["UPLOAD_FOLDER"]):
+    os.makedirs(os.environ["UPLOAD_FOLDER"])
 
 from acweb import app, db
 from acweb.commands import forge, initdb
@@ -11,6 +16,8 @@ from acweb.models import CloudFile, User
 class AcWebTestCase(unittest.TestCase):
 
     def setUp(self):
+        import warnings
+        warnings.simplefilter('ignore', category=DeprecationWarning)  # 忽略 DeprecationWarning
         with app.test_request_context():
             app.config.update(
                 TESTING=True,
@@ -39,6 +46,10 @@ class AcWebTestCase(unittest.TestCase):
             username='test',
             password='123'
         ), follow_redirects=True)
+    
+    def logout(self):
+        response = self.client.get('/logout', follow_redirects=True)
+        print(response.get_data(as_text=True))
 
     def test_app_exist(self):
         self.assertIsNotNone(app)
@@ -218,13 +229,25 @@ class AcWebTestCase(unittest.TestCase):
     #     self.assertNotIn('New CloudFile Edited Again', data)
     #     self.assertIn('Invalid input.', data)
 
-    def test_delete_item(self):
-        self.login()
+    def test_login_delete_item(self):
+        with app.test_request_context():
+            self.login()
+            response = self.client.post('/cloud_file/delete/1', follow_redirects=True)
+            data = response.get_data(as_text=True)
+            self.assertIn('Item deleted.', data)
+            self.assertNotIn('Test CloudFile Title', data)
+            self.assertEqual(CloudFile.query.count(), 0)
 
-        response = self.client.post('/cloud_file/delete/1', follow_redirects=True)
-        data = response.get_data(as_text=True)
-        self.assertIn('Item deleted.', data)
-        self.assertNotIn('Test CloudFile Title', data)
+
+    def test_logout_delete_item(self):
+        with app.test_request_context():
+            response = self.client.post('/cloud_file/delete/1', follow_redirects=True)
+            data = response.get_data(as_text=True)
+            self.assertNotIn('Item deleted.', data)
+            self.assertNotIn('Test CloudFile Title', data)
+            self.assertIn('Please log in to access this page.', data)
+            self.assertEqual(CloudFile.query.count(), 1)
+
 
     def test_forge_command(self):
         with app.test_request_context():
@@ -232,9 +255,9 @@ class AcWebTestCase(unittest.TestCase):
             self.assertIn('Done.', result.output)
             self.assertNotEqual(db.session.query(CloudFile).count(), 0)
 
-            def test_initdb_command(self):
-                result = self.runner.invoke(initdb)
-                self.assertIn('Initialized database.', result.output)
+    def test_initdb_command(self):
+        result = self.runner.invoke(initdb)
+        self.assertIn('Initialized database.', result.output)
 
     def test_create_user_command(self):
         with app.test_request_context():
