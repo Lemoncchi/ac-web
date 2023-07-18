@@ -23,7 +23,7 @@ class AcWebTestCase(unittest.TestCase):
             db.session.add(user)
             db.session.commit()
 
-            cloud_file = CloudFile.save_encrypt_commit(file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
+            cloud_file = CloudFile.save_encrypt_commit(user_id=user.id, file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
             self.test_cloud_file_id = cloud_file.id
             self.client = app.test_client()
             self.runner = app.test_cli_runner()

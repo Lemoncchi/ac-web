@@ -45,7 +45,7 @@ def forge():
             file_path = os.path.join(root,file_name)
             with open(file_path, 'rb') as f:
                 file_content = f.read()
-                cloud_file = CloudFile.save_encrypt_commit(file_name, file_content)
+                cloud_file = CloudFile.save_encrypt_commit(user.id, file_name, file_content)
 
     click.echo('Done.')
 
