@@ -67,3 +67,21 @@ class CloudFile(db.Model):
             f.write(encrypted_content_bytes)
 
         return cloud_file
+    
+    
+    @classmethod
+    def delete_uncommit(cls, cloud_file_id_:int):
+        """删除数据库中的文件元数据 & 删除本地的加密后的文件
+        """
+        cloud_file = db.session.get(CloudFile, cloud_file_id_)
+        if cloud_file is None:
+            return False
+        
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], cloud_file.file_save_name)
+        if os.path.exists(save_path):
+            os.remove(save_path)
+        
+        db.session.delete(cloud_file)
+        db.session.commit()
+
+        return True
