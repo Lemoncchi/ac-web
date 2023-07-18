@@ -9,9 +9,10 @@
 {% endif %}
 <ul class="cloud_file-list">
     {% for cloud_file in cloud_files %}
-    <li>{{ cloud_file.file_name }} - {{ cloud_file.year }}
+    <li>{{ cloud_file.file_name }} - <span class="file_size_str"> {{ cloud_file.get_size_str() }} </span>
         <span class="float-right">
             {% if current_user.is_authenticated %}
+            <a class="btn" href="{{ url_for('download_content', cloud_file_id=cloud_file.id) }}">Download</a>
             <a class="btn" href="{{ url_for('edit', cloud_file_id=cloud_file.id) }}">Edit</a>
             <form class="inline-form" method="post" action="{{ url_for('delete', cloud_file_id=cloud_file.id) }}">
                 <input class="btn" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">

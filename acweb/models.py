@@ -99,3 +99,14 @@ class CloudFile(db.Model):
         self.decrypted_content_bytes = encrypted_content_bytes
 
         return self.decrypted_content_bytes
+
+
+    def get_size_str(self) -> str:
+        import math
+        if self.file_size == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(self.file_size, 1024)))
+        p = math.pow(1024, i)
+        s = round(self.file_size / p, 2)
+        return f"{s} {size_name[i]}"
