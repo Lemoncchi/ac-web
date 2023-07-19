@@ -136,3 +136,4 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [Static method returning an instance of its class](https://stackoverflow.com/questions/19792112/static-method-returning-an-instance-of-its-class)
 - [Why is the output of werkzeugs `generate_password_hash` not constant?](https://stackoverflow.com/questions/23432478/why-is-the-output-of-werkzeugs-generate-password-hash-not-constant)
 - [Easy Python Unit Tests: Setup, Teardown, Fixtures, And More](https://hands-on.cloud/python-unit-tests/)
+- [How TO - Icon Buttons](https://www.w3schools.com/howto/howto_css_icon_buttons.asp)

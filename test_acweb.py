@@ -92,9 +92,10 @@ class AcWebTestCase(unittest.TestCase):
         data = response.get_data(as_text=True)
         self.assertNotIn('Logout', data)
         self.assertNotIn('Settings', data)
-        self.assertNotIn('<form method="post">', data)
-        self.assertNotIn('Delete', data)
-        self.assertNotIn('Edit', data)
+        self.assertNotIn('fa-trash', data)
+        self.assertNotIn('fa-edit', data)
+        self.assertNotIn('fa-download', data)
+        self.assertNotIn('fa-share', data)
 
     def test_login(self):
         response = self.client.post('/login', data=dict(
@@ -105,9 +106,10 @@ class AcWebTestCase(unittest.TestCase):
         self.assertIn("test's 中传云盘", data)
         self.assertIn('Login success.', data)
         self.assertIn('Logout', data)
-        self.assertIn('Settings', data)
-        self.assertIn('Delete', data)
-        self.assertIn('Edit', data)
+        self.assertIn('fa-trash', data)
+        self.assertIn('fa-edit', data)
+        self.assertIn('fa-download', data)
+        self.assertIn('fa-share', data)
     #     self.assertIn('<form method="post">', data)
 
     #     response = self.client.post('/login', data=dict(
@@ -150,9 +152,10 @@ class AcWebTestCase(unittest.TestCase):
         self.assertIn('Goodbye.', data)
         self.assertNotIn('Logout', data)
         self.assertNotIn('Settings', data)
-        self.assertNotIn('Delete', data)
-        self.assertNotIn('Edit', data)
-        self.assertNotIn('<form method="post">', data)
+        self.assertNotIn('fa-trash', data)
+        self.assertNotIn('fa-edit', data)
+        self.assertNotIn('fa-download', data)
+        self.assertNotIn('fa-share', data)
 
     def test_settings(self):
         self.login()

@@ -36,7 +36,7 @@ button:hover {
 }
 
 /* Extra style for the cancel button (red) */
-.cancelbtn {
+.cancelsurround_btn {
     width: auto;
     padding: 10px 18px;
     background-color: #f44336;
@@ -73,7 +73,7 @@ span.psw {
         float: none;
     }
 
-    .cancelbtn {
+    .cancelsurround_btn {
         width: 100%;
     }
 }
