@@ -39,7 +39,7 @@ def forge():
     db.session.commit()
 
     # 将测试文件复制到 uploads 文件夹中
-    example_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'example_files')
+    example_file_path = app.config['EXAMPLE_FILE_FOLDER']
     for root, dirs, files in os.walk(example_file_path):
         for file_name in files:
             file_path = os.path.join(root,file_name)

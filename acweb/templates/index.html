@@ -14,41 +14,32 @@
     {{ dropzone.create(action='uploads') }}
     {{ dropzone.style('border: 2px dashed #0087F7; margin: 3% 2% 2% 2%; min-height: 100px;') }}
     {{ dropzone.config() }}
-    <button onClick="window.location.reload();">Submit</button>
+    <button class="submit" onClick="window.location.reload();">Submit</button>
 
 <p>{{ cloud_files|length }} Files</p>
 <ul class="cloud_file-list">
     {% for cloud_file in cloud_files %}
-    <li>{{ cloud_file.file_name }} - <span class="file_size_str"> {{ cloud_file.get_size_str() }} </span>
+    <li>{{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
         <span class="float-right">
             {% if current_user.is_authenticated %}
-            <a class="btn" href="{{ url_for('download_content', cloud_file_id=cloud_file.id) }}">Download</a>
-            <a class="btn" href="{{ url_for('edit', cloud_file_id=cloud_file.id) }}">Edit</a>
-            <form class="inline-form" method="post" action="{{ url_for('delete', cloud_file_id=cloud_file.id) }}">
-                <input class="btn" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
-            </form>
+            <button class="icon_btn"
+                onclick="if(confirm('Are you sure? \nIt will be permanently deleted!')){window.location.href='{{ url_for('delete', cloud_file_id=cloud_file.id) }}'}" title="Delete"><i
+                    class="fa fa-trash"></i></button>
+            <button class="icon_btn" onclick="window.location.href='{{ url_for('download_content', cloud_file_id=cloud_file.id) }}'"
+                download><i class="fa fa-download" title="Download"></i></button>
+            <button class="icon_btn" onclick="window.location.href='{{ url_for('share', cloud_file_id=cloud_file.id) }}'"><i
+                    class="fa fa-share" title="Share"></i></button>
+            <button class="icon_btn" onclick="window.location.href='{{ url_for('edit', cloud_file_id=cloud_file.id) }}'"><i
+                    class="fa fa-edit" title="Edit file name"></i></button>
+            <button class="icon_btn" onclick="return alert('Upload time: {{ cloud_file.get_beijing_time() }}\nFile size: {{cloud_file.get_size_str()}}')"><i
+                    class="fa fa-info" title="Edit file name"></i></button>
             {% endif %}
-            <a class="imdb" href="https://www.imdb.com/find?q={{ cloud_file.file_name }}" target="_blank" file_name="Find this cloud_file on IMDb">IMDb</a>
         </span>
     </li>
     {% endfor %}
 </ul>
 {% else %}
 
-{#
-<div class="jumbotron">
-    <h1 class="display-4">Welcome to 中传放心传!</h1>
-    <p class="lead">ACWeb is a cloud storage service that allows users to upload and download files.</p>
-    
-    <hr class="my-4">
-    <p>ACWeb is a project for the course <a href="http://www.cs.hku.hk/programme/course_info.jsp?infile=2019/comp3322.html" target="_blank">COMP3322</a> at the University of Hong Kong.</p>
-    <p class="lead">
-        <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
-        <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}" role="button">Register</a>
-    </p>
-    
-</div>
-#}
 
 <form action="/login" method="post">
     <div class="container">
@@ -59,14 +50,12 @@
 
         <p>Don't have an account? <a href="/register">Register</a>.
         </p>
-        <hr>
-        {#
-        <div class="imgcontainer">
-            <img src="img_avatar2.png" alt="Avatar" class="avatar">
-        </div>
-        #}
+        <hr class="intro_login">
+
 
         <div class="container">
+            <h2>Login</h2>
+            
             <label for="uname"><b>Username</b></label>
             <input type="text" placeholder="Enter Username" name="username" required>
 
@@ -80,7 +69,7 @@
         </div>
 
         <div class="container" style="background-color:#f1f1f1">
-            <button type="button" class="cancelbtn" onclick="window.location.href='/'">Cancel</button>
+            <button type="button" class="cancelsurround_btn" onclick="window.location.href='/'">Cancel</button>
             <span class="psw">Forgot <a href="#" onclick="return confirm('未完成\n(⋟﹏⋞)')">password?</a></span>
         </div>
     </div>

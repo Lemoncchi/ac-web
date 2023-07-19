@@ -23,6 +23,7 @@ default_sqlite_database_URL = prefix + os.path.join(os.path.dirname(app.root_pat
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', default_sqlite_database_URL)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', os.path.join(app.root_path,'uploads'))
+app.config['EXAMPLE_FILE_FOLDER'] = os.getenv('EXAMPLE_FILE_FOLDER', os.path.join(app.root_path,'uploads','example_files'))
 app.config["ALLOWED_FILE_EXTENSIONS"] = os.getenv(
     "ALLOWED_FILE_EXTENSIONS",
     [

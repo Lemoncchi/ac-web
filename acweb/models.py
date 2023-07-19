@@ -14,7 +14,13 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
+        # pbkdf2:sha256:600000 ——> 600000 次 sha256 迭代
+        # 其中 hash 中也包含了一个 salt，所以可以正确验证密码
+        # Why is the output of werkzeugs `generate_password_hash` not constant?
+        # https://stackoverflow.com/questions/23432478/why-is-the-output-of-werkzeugs-generate-password-hash-not-constant
+        # 摘要：Because the salt is randomly generated each time you call the function, the resulting password hash is also different. The returned hash includes the generated salt so that can still correctly verify the password.
+
 
     def validate_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -110,3 +116,30 @@ class CloudFile(db.Model):
         p = math.pow(1024, i)
         s = round(self.file_size / p, 2)
         return f"{s} {size_name[i]}"
+
+
+    def get_beijing_time(self) -> str:
+        from datetime import datetime
+        return datetime.fromtimestamp(self.timestamp.timestamp() + 8 * 60 * 60).strftime("%Y-%m-%d %H:%M:%S")
+
+class SharedFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cloud_file_id = db.Column(db.Integer, db.ForeignKey('cloud_file.id'))  # 外键
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # 设置为分享的时间，默认设置为当前时间
+    share_code_hash = db.Column(db.String(128))
+
+    allowed_download_count = db.Column(db.Integer, default=0)  # 允许下载次数，0 表示无限制
+    used_download_count = db.Column(db.Integer, default=0)  # 已经下载次数
+
+    def set_share_code(self, share_code):
+        self.share_code_hash = generate_password_hash(share_code, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
+        # pbkdf2:sha256:600000 ——> 600000 次 sha256 迭代
+        # 其中 hash 中也包含了一个 salt，所以可以正确验证密码
+        # Why is the output of werkzeugs `generate_password_hash` not constant?
+        # https://stackoverflow.com/questions/23432478/why-is-the-output-of-werkzeugs-generate-password-hash-not-constant
+        # 摘要：Because the salt is randomly generated each time you call the function, the resulting password hash is also different. The returned hash includes the generated salt so that can still correctly verify the password.
+
+
+    def validate_share_code(self, share_code):
+        return check_password_hash(self.share_code_hash, share_code)

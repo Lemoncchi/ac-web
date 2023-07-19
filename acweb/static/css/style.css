@@ -56,7 +56,7 @@ input[name=year] {
     width: 50px;
 }
 
-.btn {
+.surround_btn {
     font-size: 12px;
     padding: 3px 5px;
     text-decoration: none;
@@ -67,7 +67,7 @@ input[name=year] {
     border-radius: 5px;
 }
 
-.btn:hover {
+.surround_btn:hover {
     text-decoration: none;
     background-color: black;
     color: white;
@@ -114,8 +114,8 @@ input[name=year] {
 
 .cloud_loading {
     display: block;
-    margin: 0 auto;
-    height: 200px;
+    margin: 60px auto;
+    height: 100px;
 }
 
 footer {
@@ -148,4 +148,8 @@ footer a {
 .file_size_str {
     color: gray;
     font-size: 14px;
+}
+
+.file_size_str {
+    margin-left: 5px;
 }
