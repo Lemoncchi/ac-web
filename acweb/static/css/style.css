@@ -149,3 +149,7 @@ footer a {
     color: gray;
     font-size: 14px;
 }
+
+.file_size_str {
+    margin-left: 5px;
+}

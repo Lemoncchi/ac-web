@@ -19,7 +19,7 @@
 <p>{{ cloud_files|length }} Files</p>
 <ul class="cloud_file-list">
     {% for cloud_file in cloud_files %}
-    <li>{{ cloud_file.file_name }} - <span class="file_size_str"> {{ cloud_file.get_size_str() }} </span>
+    <li>{{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
         <span class="float-right">
             {% if current_user.is_authenticated %}
             <button class="icon_btn"
@@ -31,6 +31,8 @@
                     class="fa fa-share" title="Share"></i></button>
             <button class="icon_btn" onclick="window.location.href='{{ url_for('edit', cloud_file_id=cloud_file.id) }}'"><i
                     class="fa fa-edit" title="Edit file name"></i></button>
+            <button class="icon_btn" onclick="return alert('Upload time: {{ cloud_file.get_beijing_time() }}\nFile size: {{cloud_file.get_size_str()}}')"><i
+                    class="fa fa-info" title="Edit file name"></i></button>
             {% endif %}
         </span>
     </li>

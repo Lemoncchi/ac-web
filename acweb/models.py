@@ -118,6 +118,10 @@ class CloudFile(db.Model):
         return f"{s} {size_name[i]}"
 
 
+    def get_beijing_time(self) -> str:
+        from datetime import datetime
+        return datetime.fromtimestamp(self.timestamp.timestamp() + 8 * 60 * 60).strftime("%Y-%m-%d %H:%M:%S")
+
 class SharedFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cloud_file_id = db.Column(db.Integer, db.ForeignKey('cloud_file.id'))  # 外键
