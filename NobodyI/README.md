@@ -83,7 +83,7 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 原项目由于在 `User` 类下既有 `name` 又有 `username` 字段，造成了后续代码的一些混乱，所以新建了 `delete_name` 分支，将 `name` 字段从整个项目逻辑中删除，只保留 `username` 字段
 
-![](.assets_img/READEME/delete_name_merge_request.png)
+![](.assets_img/README/delete_name_merge_request.png)
 
 ## [`update_pkg` 分支](https://github.com/Mr-Nobodyl/ac-web/pull/2)
 
@@ -95,7 +95,7 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 在后面遇到了一个小 bug：在服务器运行的过程中，如果运行 `test_acweb.py` 单元测试，再次访问页面将会出现 `Internal Server Error`
 
-![](.assets_img/READEME/Internal_Server_Error.png)
+![](.assets_img/README/Internal_Server_Error.png)
 
 后面 `debug` 了一会才发现，在 `test_acweb.py` 的单元测试中，原本将 `sqlite3` 使用内存数据库，但是在更新包版本后，[这段代码](https://github.com/Mr-Nobodyl/ac-web/blob/7bcd0744d373d271c2bc5d56c95eea7865a50b3a/test_acweb.py#L13) 并没有成功更新 `SQLALCHEMY_DATABASE_URI`，从而导致在测试时使用的是原本文件系统中的 `sqlite3` 数据库，而不是内存数据库
 
@@ -115,7 +115,11 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 过程中的前端大概都是在网上找的模板，然后根据自己的需求进行修改
 
-![](.assets_img/READEME/share_setting_dev.png)
+![](.assets_img/README/share_setting_dev.png)
+
+一顿魔改之后
+
+![](.assets_img/README/share_setting_completed.png)
 
 ## 参考
 
