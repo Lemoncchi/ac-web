@@ -8,8 +8,8 @@
 <div class="container">
     <h1 class="share_title">Share</h1>
 
-    <ul class="cloud_file-list">
-    <li>{{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
+    <ul class="cloud_file-list single_cloud_file_list">
+    <li single_cloud_file-list>{{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
         <span class="float-right">
             {% if current_user.is_authenticated %}
             <button class="icon_btn"

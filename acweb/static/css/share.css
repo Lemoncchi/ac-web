@@ -94,3 +94,8 @@ button.icon_btn {
 button.icon_btn:hover {
     background-color: RoyalBlue;
 }
+
+.single_cloud_file_list {
+    /* background-color: #ffea9e; */
+    background-color: rgb(215, 224, 252);
+}
