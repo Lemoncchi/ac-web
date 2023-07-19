@@ -32,7 +32,7 @@ class User(db.Model, UserMixin):
 class CloudFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)  # 默认设置为当前时间
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)  # 默认设置为当前 UTC 时间
     file_name = db.Column(db.String(60))
     file_save_name = db.Column(db.String(60))
     file_hash = db.Column(db.String(128))
@@ -129,10 +129,10 @@ class SharedFileInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cloud_file_id = db.Column(db.Integer, db.ForeignKey('cloud_file.id'))  # 外键
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # 设置为分享的时间，默认设置为当前时间
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # 设置为分享的 UTC 时间，默认设置为当前 UTC 时间
     share_code_hash = db.Column(db.String(128))
 
-    expiry_time = db.Column(db.DateTime)  # 过期时间，None 表示永不过期
+    expiry_time = db.Column(db.DateTime)  # UTC 过期时间，None 表示永不过期
 
     allowed_download_count = db.Column(db.Integer, default=0)  # 允许下载次数，0 表示无限制
     used_download_count = db.Column(db.Integer, default=0)  # 已经下载次数

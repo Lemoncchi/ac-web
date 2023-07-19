@@ -284,8 +284,8 @@ def share(cloud_file_id):
             or customed_allowed_download_times
         )
 
-        import datetime
-        expiry_time = None  # TODO 进行时间 delta 计算
+        from datetime import datetime, timedelta
+        expiry_time = datetime.utcnow() + timedelta(days=expired_in_int)
 
         shared_file_info = SharedFileInfo(cloud_file_id=cloud_file_id, owner_id=cloud_file.user_id, expiry_time=expiry_time, allowed_download_count=allowed_download_times_int)
 
