@@ -141,19 +141,6 @@ class SharedFileInfo(db.Model):
         return f'<SharedFileInfo id: {self.id}, cloud_file_id: {self.cloud_file_id}, owner_id: {self.owner_id}, timestamp: {self.timestamp}, share_code_hash: {self.share_code_hash}, expiry_time: {self.expiry_time}, allowed_download_count: {self.allowed_download_count}, used_download_count: {self.used_download_count}>'
 
 
-    def set_share_code(self, share_code):
-        self.share_code_hash = generate_password_hash(share_code, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
-        # pbkdf2:sha256:600000 ——> 600000 次 sha256 迭代
-        # 其中 hash 中也包含了一个 salt，所以可以正确验证密码
-        # Why is the output of werkzeugs `generate_password_hash` not constant?
-        # https://stackoverflow.com/questions/23432478/why-is-the-output-of-werkzeugs-generate-password-hash-not-constant
-        # 摘要：Because the salt is randomly generated each time you call the function, the resulting password hash is also different. The returned hash includes the generated salt so that can still correctly verify the password.
-
-
-    def validate_share_code(self, share_code):
-        return check_password_hash(self.share_code_hash, share_code)
-
-
     def is_expired(self) -> bool:
         from datetime import datetime
         if self.expiry_time is None:  # 永不过期
