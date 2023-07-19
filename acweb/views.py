@@ -181,6 +181,11 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
+        if user is None:  
+            # 均返回 'Invalid username or password.' 避免暴力搜索该用户名是否存在
+            flash('Invalid username or password.')
+            return redirect(url_for('login'))
+
         if username == user.username and user.validate_password(password):
             login_user(user)
             flash('Login success.')
@@ -297,3 +302,13 @@ def share(cloud_file_id):
         return redirect(url_for('index'))
         
     return render_template('share.html', cloud_file=cloud_file)
+
+
+@app.route('/share/download/<int:shared_file_info_id>', methods=['GET', 'POST'])
+def shared_file_download(shared_file_info_id: int):
+    shared_file_info = db.session.get(SharedFileInfo, shared_file_info_id)
+    if shared_file_info is None:
+        abort(404)
+    cloud_file = db.session.get(CloudFile, shared_file_info.cloud_file_id)
+
+    return render_template('shared_file_download.html', cloud_file=cloud_file, shared_file_info=shared_file_info)

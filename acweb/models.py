@@ -137,6 +137,7 @@ class SharedFileInfo(db.Model):
     allowed_download_count = db.Column(db.Integer, default=0)  # 允许下载次数，0 表示无限制
     used_download_count = db.Column(db.Integer, default=0)  # 已经下载次数
 
+    share_page_access_token_hash = db.Column(db.String(128))  # 分享页面访问令牌的「哈希」
 
     def __repr__(self):
         return f'<SharedFileInfo id: {self.id}, cloud_file_id: {self.cloud_file_id}, owner_id: {self.owner_id}, timestamp: {self.timestamp}, share_code_hash: {self.share_code_hash}, expiry_time: {self.expiry_time}, allowed_download_count: {self.allowed_download_count}, used_download_count: {self.used_download_count}>'
@@ -164,24 +165,25 @@ class SharedFileInfo(db.Model):
         return False
     
 
-    def set_share_code(self, share_code_length: int = 16) -> str:
-        """生成 `分享码` 并保存 `分享码哈希` 到数据库，返回 `分享码字符串`"""
+    def _generate_random_string(self, length) -> str:
+        import random
+        import string
+
+        letters = (
+            string.ascii_lowercase + string.digits
+        )
+        random_string = "".join(random.choice(letters) for i in range(length))
+        return random_string
+
+
+    def set_share_code(self, share_code_length: int = 16, share_page_access_token_hash_length: int = 16) -> str:
+        """生成 `分享码` 并保存 `分享码哈希` 到数据库，生成并保存 `share_page_access_token`，返回 `分享码字符串`"""
 
         assert share_code_length >= 8, "share_code_length must >= 8"
         assert share_code_length <= 32, "share_code_length must <= 32"
         assert self.share_code_hash is None, "Error! share_code_hash must have not been set before"
 
-        def get_random_string(length) -> str:
-            import random
-            import string
-
-            letters = (
-                string.ascii_lowercase + string.digits + string.ascii_uppercase + "-_.?"
-            )
-            random_string = "".join(random.choice(letters) for i in range(length))
-            return random_string
-
-        share_code = get_random_string(share_code_length)
+        share_code = self._generate_random_string(share_code_length)
 
         self.share_code_hash = generate_password_hash(
             share_code,
@@ -189,4 +191,11 @@ class SharedFileInfo(db.Model):
             salt_length=16,
         )
 
+        self.share_page_access_token_hash = generate_password_hash(
+            self._generate_random_string(share_page_access_token_hash_length),
+            method="pbkdf2:sha256:600000",
+            salt_length=16,
+        )
+
         return share_code
+

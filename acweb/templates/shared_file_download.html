@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/share.css') }}" type="text/css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="share_title">Share</h1>
+
+    <ul class="cloud_file-list single_cloud_file_list">
+        <li single_cloud_file-list>{{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str()
+                }}</span>
+            <span class="float-right">
+                {% if current_user.is_authenticated %}
+                <button class="icon_btn"
+                    onclick="if(confirm('Are you sure? \nIt will be permanently deleted!')){window.location.href='{{ url_for('delete', cloud_file_id=cloud_file.id) }}'}"
+                    title="Delete"><i class="fa fa-trash"></i></button>
+                <button class="icon_btn"
+                    onclick="window.location.href='{{ url_for('download_content', cloud_file_id=cloud_file.id) }}'"
+                    download><i class="fa fa-download" title="Download"></i></button>
+                <button class="icon_btn"
+                    onclick="window.location.href='{{ url_for('share', cloud_file_id=cloud_file.id) }}'"><i
+                        class="fa fa-share" title="Share"></i></button>
+                <button class="icon_btn"
+                    onclick="window.location.href='{{ url_for('edit', cloud_file_id=cloud_file.id) }}'"><i
+                        class="fa fa-edit" title="Edit file name"></i></button>
+                <button class="icon_btn"
+                    onclick="return alert('Upload time: {{ cloud_file.get_beijing_time() }}\nFile size: {{cloud_file.get_size_str()}}')"><i
+                        class="fa fa-info" title="Edit file name"></i></button>
+                {% endif %}
+            </span>
+        </li>
+    </ul>
+
+    <hr>
+    
+    <div class="row submit_row">
+        <input type="submit" value="Download">
+    </div>
+</div>
+<img alt="Cloud loading" class="cloud_loading" src="{{ url_for('static', filename='images/cloud_load.gif') }}"
+    file_name="中传放心传">
+{% endblock %}
