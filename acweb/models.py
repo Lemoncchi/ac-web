@@ -66,11 +66,11 @@ class CloudFile(db.Model):
         """保存文件元数据到数据库 & 保存加密后的文件到本地
         """
         file_save_name = file_name_  # TODO: 后面需要对文件名进行处理
-
+        assert len(file_save_name) <= 64, "filename too long (>64B)"  # 文件名长度检测
         file_size_ = len(content_bytes_)
-
-        file_hash_ = None  # TODO: 需要对文件进行安全 hash
-
+        # assert file_size_ < 1 * 1024 * 1024, "file too large (>=10MB)"  # 文件大小检测
+        file_hash_ = security_code.hash_code(content_bytes_)  # 需要对文件进行安全 hash
+        
         encrypted_content_bytes = content_bytes_  # TODO: 需要对文件进行加密
 
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], file_save_name)
