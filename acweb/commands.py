@@ -2,7 +2,7 @@ import os
 import shutil
 
 import click
-
+import security_code
 from acweb import app, db
 from acweb.models import CloudFile, User
 
@@ -34,7 +34,9 @@ def forge():
     # 新建默认用户
     username = 'CUCer'
     user = User(username=username)
-    user.set_password('123456')
+    user.set_password("123456")
+    user.public_private_key()  # 随机生成公私钥对
+    user.symmetric_key()  # 随机生成对称密钥
     db.session.add(user)
     db.session.commit()
 

@@ -6,13 +6,15 @@ from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from acweb import db
-
+import security_code
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20))
     password_hash = db.Column(db.String(128))
-
+    public_key = db.Column(db.LargeBinary(2048))
+    private_key = db.Column(db.LargeBinary(2048))
+    symmetric_key = db.Column(db.LargeBinary(32))
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
         # pbkdf2:sha256:600000 ——> 600000 次 sha256 迭代
@@ -25,6 +27,13 @@ class User(db.Model, UserMixin):
     def validate_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    # 为用户生成一个随机公私钥对
+    def public_private_key(self):
+        self.public_key, self.private_key = security_code.encrypt_generate()
+
+    # 为用户生成一个随机对称密钥
+    def symmetric_key(self):
+        self.symmetric_key = security_code.symmetric_generate()
 
 class CloudFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
