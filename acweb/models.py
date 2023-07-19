@@ -26,7 +26,7 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
     
     def __repr__(self):
-        return f"<User {self.id}, {self.username}, {self.password_hash}>"
+        return f"<User id: {self.id}, username: {self.username}, password_hash: {self.password_hash}>"
 
 
 class CloudFile(db.Model):
@@ -41,7 +41,7 @@ class CloudFile(db.Model):
 
 
     def __repr__(self):
-        return f'<CloudFile {self.file_name}, {self.file_save_name}, {self.file_hash}, {self.file_size}>'
+        return f'<CloudFile id: {self.id}, user_id: {self.user_id}, timestamp: {self.timestamp}, file_name: {self.file_name}, file_save_name: {self.file_save_name}, file_hash: {self.file_hash}, file_size: {self.file_size}, is_shared: {self.is_shared}>'
 
 
     def to_dict(self):
@@ -125,7 +125,7 @@ class CloudFile(db.Model):
         from datetime import datetime
         return datetime.fromtimestamp(self.timestamp.timestamp() + 8 * 60 * 60).strftime("%Y-%m-%d %H:%M:%S")
 
-class SharedFile(db.Model):
+class SharedFileInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cloud_file_id = db.Column(db.Integer, db.ForeignKey('cloud_file.id'))  # 外键
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
@@ -139,7 +139,7 @@ class SharedFile(db.Model):
 
 
     def __repr__(self):
-        return f'<SharedFile {self.cloud_file_id}, {self.owner_id}, {self.timestamp}, {self.share_code_hash}, {self.expiry_time}, {self.allowed_download_count}, {self.used_download_count}>'
+        return f'<SharedFileInfo id: {self.id}, cloud_file_id: {self.cloud_file_id}, owner_id: {self.owner_id}, timestamp: {self.timestamp}, share_code_hash: {self.share_code_hash}, expiry_time: {self.expiry_time}, allowed_download_count: {self.allowed_download_count}, used_download_count: {self.used_download_count}>'
 
 
     def set_share_code(self, share_code):

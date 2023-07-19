@@ -31,18 +31,19 @@
     </ul>
 
     <hr>
-    <form action="/share">
+    <form action="{{ request.path }}" method="post">
         <div class="row">
             <div class="col-25">
                 <label for="expired_in">Expired in</label>
             </div>
             <div class="col-75">
                 <select id="expired_in" name="expired_in">
-                    <option value="none">Input below</option>
+                    <option value="">Input below</option>
                     <option value="1">In 1 days</option>
                     <option value="3">In 3 days</option>
                     <option value="5">In 5 days</option>
                     <option value="30">In 30 days</option>
+                    <option value="0">Unlimited</option>
                 </select>
             </div>
         </div>
@@ -65,21 +66,22 @@
             </div>
             <div class="col-75">
                 <select id="allowed_download_times" name="allowed_download_times">
-                    <option value="none">Input below</option>
+                    <option value="">Input below</option>
                     <option value="1">1 times</option>
                     <option value="3">3 times</option>
                     <option value="5">5 times</option>
                     <option value="30">30 times</option>
+                    <option value="0">Unlimited</option>
                 </select>
             </div>
         </div>
 
         <div class="row">
             <div class="col-25">
-                <label for="customed_expired_in"></label>
+                <label for="customed_allowed_download_times"></label>
             </div>
             <div class="col-75">
-                <input type="text" id="customed_expired_in" name="customed_expired_in" placeholder="Customed Input">
+                <input type="text" id="customed_allowed_download_times" name="customed_allowed_download_times" placeholder="Customed Input">
             </div>
         </div>
 

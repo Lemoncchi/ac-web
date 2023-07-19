@@ -6,7 +6,7 @@ from flask import (abort, flash, redirect, render_template, request, send_file,
 from flask_login import current_user, login_required, login_user, logout_user
 
 from acweb import app, db
-from acweb.models import CloudFile, User
+from acweb.models import CloudFile, SharedFileInfo, User
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -246,15 +246,54 @@ def share(cloud_file_id):
     cloud_file = db.session.get(CloudFile, cloud_file_id)
     if cloud_file is None:
         abort(404)
-
+    
+    # 身份验证
     if current_user.id != cloud_file.user_id:
         flash('Forbidden.')
         abort(403)
 
-    if request.method == 'POST':
+    if request.method == 'GET':
+        if cloud_file.is_shared:
+            flash(f'File {cloud_file.file_name} already shared.\n')
+            flash('You will crate a seperate new share settings.')
+            # return redirect(url_for('index'))  # 不允许重复分享
+            # flash('You will update the share settings.')
+        return render_template('share.html', cloud_file=cloud_file)
+
+    elif request.method == 'POST':
+        print(request.form)
+        # print(request.form['share_type'])
+
         cloud_file.is_shared = True
+        expired_in = request.form['expired_in']
+        customed_expired_in = request.form['customed_expired_in']
+        allowed_download_times = request.form['allowed_download_times']
+        customed_allowed_download_times = request.form['customed_allowed_download_times']
+
+        if expired_in and customed_expired_in:
+            flash('In "Expiration Date", You both select the option and input the "Customed Input!"\nInvalid!')
+            return redirect(url_for('share', cloud_file_id=cloud_file_id))
+        if allowed_download_times and customed_allowed_download_times:
+            flash('In "Maximum download times", You both select the option and input the "Customed Input!"\nInvalid!')
+            return redirect(url_for('share', cloud_file_id=cloud_file_id))
+
+        expired_in_int = int(expired_in or customed_expired_in)
+
+        allowed_download_times_int = int(
+            allowed_download_times
+            or customed_allowed_download_times
+        )
+
+        import datetime
+        expiry_time = None  # TODO 进行时间 delta 计算
+
+        shared_file_info = SharedFileInfo(cloud_file_id=cloud_file_id, owner_id=cloud_file.user_id, expiry_time=expiry_time, allowed_download_count=allowed_download_times_int)
+
+        db.session.add(shared_file_info)
+
         db.session.commit()
         flash('Item shared.')
+        print(shared_file_info)
         return redirect(url_for('index'))
-
+        
     return render_template('share.html', cloud_file=cloud_file)
