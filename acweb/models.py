@@ -4,9 +4,11 @@ from acweb import app
 import werkzeug.datastructures
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
-
+import re
 from acweb import db
 import security_code
+
+filename_pattern = re.compile(r"[^\u4e00-\u9fa5]+")
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,7 +16,7 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
     public_key = db.Column(db.LargeBinary(2048))
     private_key = db.Column(db.LargeBinary(2048))
-    symmetric_key = db.Column(db.LargeBinary(32))
+    symmetric_key = db.Column(db.LargeBinary(2048))
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
         # pbkdf2:sha256:600000 ——> 600000 次 sha256 迭代
@@ -32,8 +34,9 @@ class User(db.Model, UserMixin):
         self.public_key, self.private_key = security_code.encrypt_generate()
 
     # 为用户生成一个随机对称密钥
-    def symmetric_key(self):
-        self.symmetric_key = security_code.symmetric_generate()
+    def symmetric_key(self,public_key):
+        key = security_code.symmetric_generate()
+        self.symmetric_key = security_code.RSA_encode(key,public_key)   #对对称密钥使用公钥加密
 
 class CloudFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,6 +47,8 @@ class CloudFile(db.Model):
     file_hash = db.Column(db.String(128))
     file_size = db.Column(db.Integer)
     is_shared = db.Column(db.Boolean, default=False)
+    encrypted_content_bytes = db.Column(db.LargeBinary(2048))   #存加密文件
+    sign = db.Column(db.String(2048)) #存签名
 
 
     def __repr__(self):
@@ -62,25 +67,30 @@ class CloudFile(db.Model):
         }
     
     @staticmethod
-    def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes, is_shared_=False):
+    def save_encrypt_commit(user_id, file_name_, public_key,private_key,symmetric_key,content_bytes_:bytes, is_shared_=False):
         """保存文件元数据到数据库 & 保存加密后的文件到本地
         """
         file_save_name = file_name_  # TODO: 后面需要对文件名进行处理
         assert len(file_save_name) <= 64, "filename too long (>64B)"  # 文件名长度检测
+        # assert filename_pattern.fullmatch(file_name_), "no unicode character allowed"  #文件非法字符检测
         file_size_ = len(content_bytes_)
         # assert file_size_ < 1 * 1024 * 1024, "file too large (>=10MB)"  # 文件大小检测
-        file_hash_ = security_code.hash_code(content_bytes_)  # 需要对文件进行安全 hash
         
-        encrypted_content_bytes = content_bytes_  # TODO: 需要对文件进行加密
+        file_hash_ = security_code.hash_code(content_bytes_)  # 对文件进行安全 hash
+        sign_ = security_code.RSA_sign(content_bytes_,private_key) # 对文件进行签名
+        
+        s_key = security_code.RSA_decode(symmetric_key,private_key)  #对对称密钥先解密再使用
+        encrypted_content_bytes_ = security_code.symmetric_encode(content_bytes_,s_key)   # 对文件进行对称加密
+        
 
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], file_save_name)
 
-        cloud_file = CloudFile(user_id=user_id, file_name=file_name_, file_save_name=file_save_name, file_hash=file_hash_, file_size=file_size_, is_shared=is_shared_)
+        cloud_file = CloudFile(user_id=user_id, file_name=file_name_, file_save_name=file_save_name, file_hash=file_hash_, file_size=file_size_, is_shared=is_shared_,encrypted_content_bytes = encrypted_content_bytes_,sign = sign_ )
         db.session.add(cloud_file)
         db.session.commit()
 
         with open(save_path, 'wb') as f:  # 保存 文件 & 加密后的文件
-            f.write(encrypted_content_bytes)
+            f.write(encrypted_content_bytes_)
 
         return cloud_file
     

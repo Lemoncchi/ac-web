@@ -36,7 +36,7 @@ def forge():
     user = User(username=username)
     user.set_password("123456")
     user.public_private_key()  # 随机生成公私钥对
-    user.symmetric_key()  # 随机生成对称密钥
+    user.symmetric_key(user.public_key)  # 随机生成对称密钥
     db.session.add(user)
     db.session.commit()
 
@@ -47,7 +47,7 @@ def forge():
             file_path = os.path.join(root,file_name)
             with open(file_path, 'rb') as f:
                 file_content = f.read()
-                cloud_file = CloudFile.save_encrypt_commit(user.id, file_name, file_content)
+                cloud_file = CloudFile.save_encrypt_commit(user.id, file_name,user.public_key,user.private_key,user.symmetric_key,file_content)
 
     click.echo('Done.')
 
