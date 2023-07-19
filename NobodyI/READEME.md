@@ -134,3 +134,4 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [Uploading and Downloading Files in Flask](https://www.geeksforgeeks.org/uploading-and-downloading-files-in-flask/)
 - [Creating bytesIO object](https://stackoverflow.com/questions/39799009/creating-bytesio-object)
 - [Static method returning an instance of its class](https://stackoverflow.com/questions/19792112/static-method-returning-an-instance-of-its-class)
+- [Why is the output of werkzeugs `generate_password_hash` not constant?](https://stackoverflow.com/questions/23432478/why-is-the-output-of-werkzeugs-generate-password-hash-not-constant)
