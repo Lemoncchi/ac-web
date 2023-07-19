@@ -266,7 +266,7 @@ def share(cloud_file_id):
         return render_template('share.html', cloud_file=cloud_file)
 
     elif request.method == 'POST':
-        print(request.form)
+        # print(request.form)
         # print(request.form['share_type'])
 
         cloud_file.is_shared = True
@@ -298,7 +298,7 @@ def share(cloud_file_id):
 
         db.session.commit()
         flash('Item shared.')
-        print(shared_file_info)
+        # print(shared_file_info)
         return redirect(url_for('index'))
         
     return render_template('share.html', cloud_file=cloud_file)
@@ -307,8 +307,19 @@ def share(cloud_file_id):
 @app.route('/share/download/<int:shared_file_info_id>', methods=['GET', 'POST'])
 def shared_file_download(shared_file_info_id: int):
     shared_file_info = db.session.get(SharedFileInfo, shared_file_info_id)
+    share_page_access_token = request.args.get('share_page_access_token')
+
     if shared_file_info is None:
         abort(404)
+    if share_page_access_token is None:
+        flash('None share code access token.')
+        abort(404)
+
+    if not shared_file_info.validate_share_page_access_token(share_page_access_token=share_page_access_token):  # 验证分享码失败
+        flash('Invalid share code.')  # 可根据安全不提供此信息，并返回 404
+        abort(403)
+
+
     cloud_file = db.session.get(CloudFile, shared_file_info.cloud_file_id)
 
     return render_template('shared_file_download.html', cloud_file=cloud_file, shared_file_info=shared_file_info)

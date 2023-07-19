@@ -50,14 +50,23 @@ class AcWebTestCase(unittest.TestCase):
             db.drop_all()
 
     def login(self):
-        self.client.post('/login', data=dict(
+        response = self.client.post('/login', data=dict(
             username='test',
             password='123'
         ), follow_redirects=True)
+        # print('LOGIN', response.get_data(as_text=True))
     
+    def share_file(self, cloud_file_id: int, expired_in:str = '10', customed_expired_in:str = '', allowed_download_times:str = '2', customed_allowed_download_times:str = ''):
+        response = self.client.post(
+            f"/share/{cloud_file_id}",
+            data=dict(expired_in='10', customed_expired_in='',allowed_download_times='2', customed_allowed_download_times=''),
+            follow_redirects=True,
+        )
+        # print(response.get_data(as_text=True))
+
     def logout(self):
         response = self.client.get('/logout', follow_redirects=True)
-        print(response.get_data(as_text=True))
+        # print(response.get_data(as_text=True))
 
     def test_app_exist(self):
         self.assertIsNotNone(app)
@@ -290,6 +299,14 @@ class AcWebTestCase(unittest.TestCase):
             self.assertEqual(User.query.first().username, 'peter')
             self.assertTrue(User.query.first().validate_password('456'))
 
+    def test_None_share_code_access_token(self):
+        with app.test_request_context():
+            self.login()
+            self.share_file(self.test_cloud_file_id)
+            response = self.client.get(f'/share/download/{self.test_cloud_file_id}')
+            data = response.get_data(as_text=True)
+            self.assertIn('None share code access token.', data)
+        
 
 if __name__ == '__main__':
     unittest.main()

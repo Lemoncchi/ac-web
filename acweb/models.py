@@ -199,3 +199,12 @@ class SharedFileInfo(db.Model):
 
         return share_code
 
+
+    def validate_share_code(self, share_code: str) -> bool:
+        """验证 `分享码`"""
+        return check_password_hash(self.share_code_hash, share_code)
+    
+    
+    def validate_share_page_access_token(self, share_page_access_token: str) -> bool:
+        """验证 `分享页面访问令牌`"""
+        return check_password_hash(self.share_page_access_token_hash, share_page_access_token)
