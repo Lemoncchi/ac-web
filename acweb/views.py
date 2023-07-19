@@ -176,7 +176,7 @@ def login():
             flash('Invalid input.')
             return redirect(url_for('login'))
 
-        user = User.query.first()
+        user = User.query.filter_by(username=username).first()
 
         if username == user.username and user.validate_password(password):
             login_user(user)
@@ -192,7 +192,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        print(request.form)
+
         username = request.form['username']
         password = request.form['psw']
         password_repeated = request.form['psw-repeat']
