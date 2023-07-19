@@ -111,6 +111,12 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 这里研究了一段时间，但是如果要使用 `工厂模式` 对 `app` 进行初始化的话，整个项目的架构的很多地方都需要做相应的修改，所以最后还是放弃了使用 `工厂模式`，而是使用 `环境变量` 的一个小 `trick` 来解决了这个问题（但是我在想这个问题归根到底应该还是 `SQLAcademy 2.0` 的一个小 bug，没有像 1.0 版本中在 app.update 中成功更新 `SQLALCHEMY_DATABASE_URI`）
 
+## 前端
+
+过程中的前端大概都是在网上找的模板，然后根据自己的需求进行修改
+
+![](.assets_img/READEME/share_setting_dev.png)
+
 ## 参考
 
 - [Quickstart Flask Documentation (2.3.x)](https://flask.palletsprojects.com/en/2.3.x/quickstart/)
@@ -137,3 +143,4 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [Why is the output of werkzeugs `generate_password_hash` not constant?](https://stackoverflow.com/questions/23432478/why-is-the-output-of-werkzeugs-generate-password-hash-not-constant)
 - [Easy Python Unit Tests: Setup, Teardown, Fixtures, And More](https://hands-on.cloud/python-unit-tests/)
 - [How TO - Icon Buttons](https://www.w3schools.com/howto/howto_css_icon_buttons.asp)
+- [How TO - Responsive Form](https://www.w3schools.com/howto/howto_css_responsive_form.asp)
