@@ -37,11 +37,10 @@ class CloudFile(db.Model):
     file_save_name = db.Column(db.String(60))
     file_hash = db.Column(db.String(128))
     file_size = db.Column(db.Integer)
-    is_shared = db.Column(db.Boolean, default=False)
 
 
     def __repr__(self):
-        return f'<CloudFile id: {self.id}, user_id: {self.user_id}, timestamp: {self.timestamp}, file_name: {self.file_name}, file_save_name: {self.file_save_name}, file_hash: {self.file_hash}, file_size: {self.file_size}, is_shared: {self.is_shared}>'
+        return f'<CloudFile id: {self.id}, user_id: {self.user_id}, timestamp: {self.timestamp}, file_name: {self.file_name}, file_save_name: {self.file_save_name}, file_hash: {self.file_hash}, file_size: {self.file_size}>'
 
 
     def to_dict(self):
@@ -52,11 +51,10 @@ class CloudFile(db.Model):
             'file_save_name': self.file_save_name,
             'file_hash': self.file_hash,
             'file_size': self.file_size,
-            'is_shared': self.is_shared
         }
     
     @staticmethod
-    def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes, is_shared_=False):
+    def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes):
         """保存文件元数据到数据库 & 保存加密后的文件到本地
         """
         file_save_name = file_name_  # TODO: 后面需要对文件名进行处理
@@ -69,7 +67,7 @@ class CloudFile(db.Model):
 
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], file_save_name)
 
-        cloud_file = CloudFile(user_id=user_id, file_name=file_name_, file_save_name=file_save_name, file_hash=file_hash_, file_size=file_size_, is_shared=is_shared_)
+        cloud_file = CloudFile(user_id=user_id, file_name=file_name_, file_save_name=file_save_name, file_hash=file_hash_, file_size=file_size_)
         db.session.add(cloud_file)
         db.session.commit()
 
@@ -204,7 +202,7 @@ class SharedFileInfo(db.Model):
         """验证 `分享码`"""
         return check_password_hash(self.share_code_hash, share_code)
     
-    
+
     def validate_share_page_access_token(self, share_page_access_token: str) -> bool:
         """验证 `分享页面访问令牌`"""
         return check_password_hash(self.share_page_access_token_hash, share_page_access_token)

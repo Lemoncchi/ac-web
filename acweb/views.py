@@ -100,12 +100,6 @@ def download_content(cloud_file_id: int):
     if cloud_file is None:
         abort(404)
 
-    if cloud_file.is_shared:
-        # TODO: 检查是否过期
-        if cloud_file.is_expired:
-            flash('Expired! Forbidden.')
-            abort(403)  # Forbidden
-
     else: # 私人非共享文件
         if current_user.is_authenticated:
             if current_user.id != cloud_file.user_id:
@@ -128,12 +122,6 @@ def download_hash(cloud_file_id: int):
     cloud_file = db.session.get(CloudFile, cloud_file_id)
     if cloud_file is None:
         abort(404)
-    
-    if cloud_file.is_shared:
-        # TODO: 检查是否过期
-        if cloud_file.is_expired:
-            flash('Expired! Forbidden.')
-            abort(403)  # Forbidden
 
     else: # 私人非共享文件
         if current_user.is_authenticated:
@@ -257,6 +245,16 @@ def share(cloud_file_id):
         flash('Forbidden.')
         abort(403)
 
+    from datetime import datetime
+    from sqlalchemy import and_, or_, not_
+
+    shared_file_info_list = SharedFileInfo.query.filter(
+        and_(
+            SharedFileInfo.cloud_file_id == cloud_file_id,
+            SharedFileInfo.expiry_time < datetime.utcnow(),
+        )
+    )
+
     if request.method == 'GET':
         if cloud_file.is_shared:
             flash(f'File {cloud_file.file_name} already shared.\n')
@@ -269,7 +267,6 @@ def share(cloud_file_id):
         # print(request.form)
         # print(request.form['share_type'])
 
-        cloud_file.is_shared = True
         expired_in = request.form['expired_in']
         customed_expired_in = request.form['customed_expired_in']
         allowed_download_times = request.form['allowed_download_times']
@@ -313,10 +310,10 @@ def shared_file_download(shared_file_info_id: int):
         abort(404)
     if share_page_access_token is None:
         flash('None share code access token.')
-        abort(404)
+        abort(403)  # 可根据 `安全性要求` 不提供此信息，并返回 404
 
     if not shared_file_info.validate_share_page_access_token(share_page_access_token=share_page_access_token):  # 验证分享码失败
-        flash('Invalid share code.')  # 可根据安全不提供此信息，并返回 404
+        flash('Invalid share code.')  # 可根据 `安全性要求` 不提供此信息，并返回 404
         abort(403)
 
 
