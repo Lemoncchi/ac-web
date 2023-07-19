@@ -153,3 +153,40 @@ class SharedFileInfo(db.Model):
 
     def validate_share_code(self, share_code):
         return check_password_hash(self.share_code_hash, share_code)
+
+
+    def is_expired(self) -> bool:
+        from datetime import datetime
+        if self.expiry_time is None:  # 永不过期
+            return False
+        if datetime.utcnow() > self.expiry_time:
+            return True
+        return False
+    
+
+    def set_share_code(self, share_code_length: int = 16) -> str:
+        """生成 `分享码` 并保存 `分享码哈希` 到数据库，返回 `分享码字符串`"""
+
+        assert share_code_length >= 8, "share_code_length must >= 8"
+        assert share_code_length <= 32, "share_code_length must <= 32"
+        assert self.share_code_hash is None, "Error! share_code_hash must have not been set before"
+
+        def get_random_string(length) -> str:
+            import random
+            import string
+
+            letters = (
+                string.ascii_lowercase + string.digits + string.ascii_uppercase + "-_.?"
+            )
+            random_string = "".join(random.choice(letters) for i in range(length))
+            return random_string
+
+        share_code = get_random_string(share_code_length)
+
+        self.share_code_hash = generate_password_hash(
+            share_code,
+            method="pbkdf2:sha256:600000",
+            salt_length=16,
+        )
+
+        return share_code
