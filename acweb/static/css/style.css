@@ -112,10 +112,16 @@ input[name=year] {
     padding: 3px 5px;
 }
 
-.cloud_loading {
+.cloud_loading_inbox {
     display: block;
     margin: 0 auto;
-    height: 200px;
+    height: 100px;
+}
+
+.cloud_loading_footer {
+    display: block;
+    margin: 80px auto;
+    height: 100px;
 }
 
 footer {

@@ -58,20 +58,16 @@
             <p class="introduction">AC-Web is a cloud storage service that allows users to upload and download files.</p>
 
         {% if not current_user.is_authenticated %}
-        <img alt="Cloud loading" class="cloud_loading" src="{{ url_for('static', filename='images/cloud_load.gif') }}"
-            file_name="中传放心传">
+        <img alt="Cloud loading" class="cloud_loading_inbox" src="{{ url_for('static', filename='images/cloud_load.gif') }}"
+            file_name="中传放心传" >
         {% endif %}
         
         <p>Don't have an account? <a href="/register">Register</a>.
         </p>
         <hr>
-        {#
-        <div class="imgcontainer">
-            <img src="img_avatar2.png" alt="Avatar" class="avatar">
-        </div>
-        #}
 
         <div class="container">
+            <h2>Login</h2>
             <label for="uname"><b>Username</b></label>
             <input type="text" placeholder="Enter Username" name="username" required>
 
@@ -93,7 +89,7 @@
 
 {% endif %}
 {% if current_user.is_authenticated %}
-<img alt="Cloud loading" class="cloud_loading" src="{{ url_for('static', filename='images/cloud_load.gif') }}"
+<img alt="Cloud loading" class="cloud_loading_footer" src="{{ url_for('static', filename='images/cloud_load.gif') }}"
     file_name="中传放心传">
 {% endif %}
 {% endblock %}
