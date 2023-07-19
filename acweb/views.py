@@ -247,6 +247,10 @@ def share(cloud_file_id):
     if cloud_file is None:
         abort(404)
 
+    if current_user.id != cloud_file.user_id:
+        flash('Forbidden.')
+        abort(403)
+
     if request.method == 'POST':
         cloud_file.is_shared = True
         db.session.commit()
