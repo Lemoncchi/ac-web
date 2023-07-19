@@ -74,3 +74,23 @@ hr {
 .submit_row {
     margin: 20px auto;
 }
+
+h1.share_title {
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+button.icon_btn {
+    background-color: DodgerBlue;
+    border: none;
+    color: white;
+    font-size: 12px;
+    padding: 3px 5px;
+    /* padding: 12px 16px;
+    font-size: 16px; */
+    cursor: pointer;
+}
+
+button.icon_btn:hover {
+    background-color: RoyalBlue;
+}
