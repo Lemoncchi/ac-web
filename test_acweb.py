@@ -1,12 +1,11 @@
 import os
+import shutil
 import unittest
 
 os.environ['DATABASE_URI'] = 'sqlite:///:memory:'
 os.environ["UPLOAD_FOLDER"] = os.path.join(
     os.path.dirname(__file__), "acweb", "uploads", "test_uploads"
 )
-if not os.path.exists(os.environ["UPLOAD_FOLDER"]):
-    os.makedirs(os.environ["UPLOAD_FOLDER"])
 
 from acweb import app, db
 from acweb.commands import forge, initdb
@@ -14,6 +13,15 @@ from acweb.models import CloudFile, User
 
 
 class AcWebTestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        if not os.path.exists(os.environ["UPLOAD_FOLDER"]):
+            os.makedirs(os.environ["UPLOAD_FOLDER"])
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(os.environ["UPLOAD_FOLDER"])
 
     def setUp(self):
         import warnings
