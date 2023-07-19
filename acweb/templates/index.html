@@ -35,20 +35,6 @@
 </ul>
 {% else %}
 
-{#
-<div class="jumbotron">
-    <h1 class="display-4">Welcome to 中传放心传!</h1>
-    <p class="lead">ACWeb is a cloud storage service that allows users to upload and download files.</p>
-    
-    <hr class="my-4">
-    <p>ACWeb is a project for the course <a href="http://www.cs.hku.hk/programme/course_info.jsp?infile=2019/comp3322.html" target="_blank">COMP3322</a> at the University of Hong Kong.</p>
-    <p class="lead">
-        <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
-        <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}" role="button">Register</a>
-    </p>
-    
-</div>
-#}
 
 <form action="/login" method="post">
     <div class="container">
@@ -59,10 +45,12 @@
 
         <p>Don't have an account? <a href="/register">Register</a>.
         </p>
-        <hr>
+        <hr class="intro_login">
 
 
         <div class="container">
+            <h2>Login</h2>
+            
             <label for="uname"><b>Username</b></label>
             <input type="text" placeholder="Enter Username" name="username" required>
 
