@@ -24,6 +24,9 @@ class User(db.Model, UserMixin):
 
     def validate_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def __repr__(self):
+        return f"<User {self.id}, {self.username}, {self.password_hash}>"
 
 
 class CloudFile(db.Model):
@@ -38,7 +41,7 @@ class CloudFile(db.Model):
 
 
     def __repr__(self):
-        return f'<CloudFile {self.file_name}, {self.file_save_name}, {self.cloud_file.file_hash}, {self.cloud_file.file_size}>'
+        return f'<CloudFile {self.file_name}, {self.file_save_name}, {self.file_hash}, {self.file_size}>'
 
 
     def to_dict(self):
@@ -129,8 +132,15 @@ class SharedFile(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # 设置为分享的时间，默认设置为当前时间
     share_code_hash = db.Column(db.String(128))
 
+    expiry_time = db.Column(db.DateTime)  # 过期时间，None 表示永不过期
+
     allowed_download_count = db.Column(db.Integer, default=0)  # 允许下载次数，0 表示无限制
     used_download_count = db.Column(db.Integer, default=0)  # 已经下载次数
+
+
+    def __repr__(self):
+        return f'<SharedFile {self.cloud_file_id}, {self.owner_id}, {self.timestamp}, {self.share_code_hash}, {self.expiry_time}, {self.allowed_download_count}, {self.used_download_count}>'
+
 
     def set_share_code(self, share_code):
         self.share_code_hash = generate_password_hash(share_code, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
