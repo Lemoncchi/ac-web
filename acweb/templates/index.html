@@ -16,9 +16,9 @@
     {{ dropzone.config() }}
     <button class="submit" onClick="window.location.reload();">Submit</button>
 
-<p>{{ cloud_files|length }} Files</p>
+<p>{{ user_cloud_files|length }} Files</p>
 <ul class="cloud_file-list">
-    {% for cloud_file in cloud_files %}
+    {% for cloud_file in user_cloud_files %}
     <li>{{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
         <span class="float-right">
             {% if current_user.is_authenticated %}

@@ -28,8 +28,11 @@ def index():
         flash('Item created.')
         return redirect(url_for('index'))
 
-    cloud_files = CloudFile.query.all()
-    return render_template('index.html', cloud_files=cloud_files)
+    if current_user.is_authenticated:
+        ueser_cloud_files = CloudFile.query.filter_by(user_id=current_user.id).order_by(CloudFile.timestamp.desc()).all()
+        return render_template('index.html', user_cloud_files=ueser_cloud_files)
+    else:
+        return render_template('index.html')
 
 
 @app.route('/uploads', methods=['POST'])
