@@ -69,6 +69,20 @@ class User(db.Model, UserMixin):
             'lowercase_error' : lowercase_error,
             'symbol_error' : symbol_error,
         }
+    
+    @staticmethod
+    def is_valid_username(username) -> typing.Tuple[bool, str]:
+        """
+        Check if the given username only contains Chinese characters, English letters, and numbers.
+        """
+        if len(username) > app.config['MAX_USERNAME_LENGTH']:
+            return False, "Username is too long."
+        import re
+        pattern_Chinese = re.compile(r'^[\u4e00-\u9fa5a-zA-Z0-9]+$')
+        if not bool(pattern_Chinese.match(username)):
+            return False, "Username can only contain Chinese characters, English letters, and numbers."
+        return True, "Valid username."
+
 
 
 class CloudFile(db.Model):

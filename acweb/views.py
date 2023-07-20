@@ -86,7 +86,10 @@ def edit(cloud_file_id):
     if request.method == 'POST':
         file_name = request.form['file_name']
 
-        if not file_name or len(file_name) > app.config['MAX_FILE_NAME_LENGTH']:
+        if not file_name:
+            flash('Invalid file name input.')
+            return redirect(url_for('edit', cloud_file_id=cloud_file_id))
+        elif len(file_name) > app.config['MAX_FILE_NAME_LENGTH']:
             flash(f'Maximum file name length is {app.config["MAX_FILE_NAME_LENGTH"]}.')
             return redirect(url_for('edit', cloud_file_id=cloud_file_id))
 
@@ -166,8 +169,22 @@ def settings():
     if request.method == 'POST':
         username = request.form['username']
 
-        if not username or len(username) > 20:
+        if not username:
             flash('Invalid input.')
+            return redirect(url_for('settings'))
+
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists.')
+            return redirect(url_for('settings'))
+
+        if len(username) > app.config['MAX_USERNAME_LENGTH']:
+            flash('Username too long.')
+            return redirect(url_for('settings'))
+
+        # 用户名字符校验
+        username_check_result, message = User.is_valid_username(username)
+        if not username_check_result:
+            flash(message)
             return redirect(url_for('settings'))
 
         user = User.query.first()
@@ -232,6 +249,12 @@ def register():
             return redirect(url_for('register'))
         if len(password) > app.config['MAX_PASSWORD_LENGTH']:
             flash('Password too long.')
+            return redirect(url_for('register'))
+
+        # 用户名字符校验
+        username_check_result, message = User.is_valid_username(username)
+        if not username_check_result:
+            flash(message)
             return redirect(url_for('register'))
 
         # 密码强度校验

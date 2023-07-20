@@ -211,69 +211,40 @@ class AcWebTestCase(unittest.TestCase):
             username='Grey Li',
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Settings updated.', data)
-        self.assertIn('Grey Li', data)
+        self.assertIn('Username can only contain Chinese characters, English letters, and numbers.', data)
+        self.assertNotIn('Grey Li', data)
 
-    # def test_create_item(self):
-    #     self.test_user1.login(self.client)
 
-    #     response = self.client.post('/', data=dict(
-    #         file_name='New CloudFile',
-    #         year='2019'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertIn('Item created.', data)
-    #     self.assertIn('New CloudFile', data)
+    @unittest.skipIf(debug_skip, "Speed up debug")
+    def test_update_file_name(self):
+        self.test_user1.login(self.client)
 
-    #     response = self.client.post('/', data=dict(
-    #         file_name='',
-    #         year='2019'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Item created.', data)
-    #     self.assertIn('Invalid input.', data)
+        response = self.client.get('/cloud_file/edit/1')
+        data = response.get_data(as_text=True)
+        self.assertIn('Edit item', data)
+        self.assertIn('Test CloudFile Title', data)
 
-    #     response = self.client.post('/', data=dict(
-    #         file_name='New CloudFile',
-    #         year=''
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Item created.', data)
-    #     self.assertIn('Invalid input.', data)
+        response = self.client.post('/cloud_file/edit/1', data=dict(
+            file_name='New CloudFile Edited',
+        ), follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertIn('Item updated.', data)
+        self.assertIn('New CloudFile Edited', data)
 
-    # def test_update_item(self):
-    #     self.test_user1.login(self.client)
+        response = self.client.post('/cloud_file/edit/1', data=dict(
+            file_name='',
+        ), follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertNotIn('Item updated.', data)
+        self.assertIn('Invalid file name input.', data)
 
-    #     response = self.client.get('/cloud_file/edit/1')
-    #     data = response.get_data(as_text=True)
-    #     self.assertIn('Edit item', data)
-    #     self.assertIn('Test CloudFile Title', data)
-    #     self.assertIn('2019', data)
-
-    #     response = self.client.post('/cloud_file/edit/1', data=dict(
-    #         file_name='New CloudFile Edited',
-    #         year='2019'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertIn('Item updated.', data)
-    #     self.assertIn('New CloudFile Edited', data)
-
-    #     response = self.client.post('/cloud_file/edit/1', data=dict(
-    #         file_name='',
-    #         year='2019'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Item updated.', data)
-    #     self.assertIn('Invalid input.', data)
-
-    #     response = self.client.post('/cloud_file/edit/1', data=dict(
-    #         file_name='New CloudFile Edited Again',
-    #         year=''
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Item updated.', data)
-    #     self.assertNotIn('New CloudFile Edited Again', data)
-    #     self.assertIn('Invalid input.', data)
+        response = self.client.post('/cloud_file/edit/1', data=dict(
+            file_name='New CloudFile Edited Again',
+        ), follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertIn('Item updated.', data)
+        self.assertIn('New CloudFile Edited Again', data)
+        self.assertNotIn('Invalid input.', data)
 
 
     @unittest.skipIf(debug_skip, "Speed up debug")
