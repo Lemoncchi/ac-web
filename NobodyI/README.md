@@ -173,3 +173,4 @@ self.assertIn("Forbidden.\nYou don&#39;t have the permission to delete this item
 - [HTML ESCAPE CHARACTERS: COMPLETE LIST OF HTML ENTITIES](https://mateam.net/html-escape-characters/)
 - [HTML <input> value Attribute](https://www.w3schools.com/tags/att_input_value.asp)
 - [HTML <form> method Attribute](https://www.w3schools.com/tags/att_form_method.asp)
+- [Flask-Dropzone：为你的Flask程序添加文件上传功能](https://greyli.com/flask-dropzone/)

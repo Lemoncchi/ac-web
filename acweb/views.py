@@ -42,19 +42,28 @@ def uploads():
     if request.method == 'POST':
         f = request.files.get('file')
         if f is None:
-            flash('No file part')
-            return redirect(url_for('index'))
+            message = 'No selected file'
+            flash(message)
+            return message, 400
         elif f.filename is None or '':
-            flash('No selected file')
-            return redirect(url_for('index'))
+            message = 'No selected file'
+            flash(message)
+            return message, 400
         else:
             file_name = f.filename
 
             if len(file_name) > app.config['MAX_FILE_NAME_LENGTH']:
-                flash(f'Maximum file name length is {app.config["MAX_FILE_NAME_LENGTH"]}.')
-                return redirect(url_for('index'))
+                message = f'Maximum file name length is {app.config["MAX_FILE_NAME_LENGTH"]}.'
+                flash(message)
+                return message, 400
 
-            # TODO: 检查文件类型（后缀）
+            # 检查文件类型（后缀）
+            import os
+            file_extension = os.path.splitext(file_name)[1].lower()
+            if file_extension not in app.config["ALLOWED_FILE_EXTENSIONS"]:
+                flash(f'Invalid file extension: {file_extension}')
+                flash(f'Allowed file extensions: {app.config["ALLOWED_FILE_EXTENSIONS"]}')
+                return f'Invalid file extension: {file_extension}', 400
 
             content_bytes = f.read()
 

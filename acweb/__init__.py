@@ -24,23 +24,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', default_sqlite
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', os.path.join(app.root_path,'uploads'))
 app.config['EXAMPLE_FILE_FOLDER'] = os.getenv('EXAMPLE_FILE_FOLDER', os.path.join(app.root_path,'uploads','example_files'))
+app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
 app.config["ALLOWED_FILE_EXTENSIONS"] = os.getenv(
-    "ALLOWED_FILE_EXTENSIONS",
-    [
-        "jpg",
-        "jpeg",
-        "png",
-        "bmp",
-        "gif",
-        "doc",
-        "docx",
-        "xls",
-        "xlsx",
-        "ppt",
-        "pptx",
-        "pdf",
-    ],
+    "ALLOWED_FILE_EXTENSIONS", '.jpg, .png, .pdf, .docx, .xls, .xlsx, .ppt, .pptx, .zip'  # 禁止 txt 文件
 )
+app.config['DROPZONE_ALLOWED_FILE_TYPE'] = app.config["ALLOWED_FILE_EXTENSIONS"]
+
+if isinstance(app.config["ALLOWED_FILE_EXTENSIONS"], str):
+    app.config["ALLOWED_FILE_EXTENSIONS"] = app.config["ALLOWED_FILE_EXTENSIONS"].lower().replace(' ', '').split(",")
+
+app.config["ALLOWED_FILE_EXTENSIONS"] = set(app.config["ALLOWED_FILE_EXTENSIONS"])  # 去重 & 转换为 set
+
 app.config['MAX_FILE_NAME_LENGTH'] = os.getenv('MAX_FILE_NAME_LENGTH', 60)
 app.config['MAX_PASSWORD_LENGTH'] = os.getenv('MAX_PASSWORD_LENGTH', 36)
 app.config['MAX_USERNAME_LENGTH'] = os.getenv('MAX_USERNAME_LENGTH', 36)
