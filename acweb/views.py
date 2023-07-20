@@ -248,7 +248,7 @@ def share(cloud_file_id):
     from datetime import datetime
     from sqlalchemy import and_, or_, not_
 
-    shared_file_info_list = SharedFileInfo.query.filter(
+    current_file_shared_file_info_list = SharedFileInfo.query.filter(
         and_(
             SharedFileInfo.cloud_file_id == cloud_file_id,
             SharedFileInfo.expiry_time < datetime.utcnow(),
@@ -256,7 +256,7 @@ def share(cloud_file_id):
     )
 
     if request.method == 'GET':
-        if cloud_file.is_shared:
+        if current_file_shared_file_info_list:
             flash(f'File {cloud_file.file_name} already shared.\n')
             flash('You will crate a seperate new share settings.')
             # return redirect(url_for('index'))  # 不允许重复分享
