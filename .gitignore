@@ -11,3 +11,5 @@ env
 flask_session
 uploads/
 !uploads/example_files/
+acweb/secrets
+.vscode

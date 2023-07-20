@@ -30,6 +30,10 @@ jobs:
       run:
         # 安装所需要的依赖
         pip3 install -r requirements.txt
+    - name: generate server key
+      run:
+        # 生成服务器密钥
+        python3 generate_server_key.py
     - name: coverage test
       run: 
         # 运行测试用例
@@ -60,6 +64,10 @@ jobs:
       run:
         # 安装所需要的依赖
         pip3 install -r requirements.in
+    - name: generate server key
+      run:
+        # 生成服务器密钥
+        python3 generate_server_key.py
     - name: coverage test
       run: 
         # 运行测试用例

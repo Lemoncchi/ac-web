@@ -34,7 +34,7 @@ def forge():
     # 新建默认用户
     username = 'CUCer'
     user = User(username=username)
-    user.set_password('123456')
+    user.set_password('7q:N37mayrMgiH!')
     db.session.add(user)
     db.session.commit()
 
@@ -46,6 +46,8 @@ def forge():
             with open(file_path, 'rb') as f:
                 file_content = f.read()
                 cloud_file = CloudFile.save_encrypt_commit(user.id, file_name, file_content)
+
+
 
     click.echo('Done.')
 

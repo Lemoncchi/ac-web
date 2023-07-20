@@ -13,8 +13,8 @@
 - [ ] 基于网页的用户注册与登录系统（60 分）
   - [ ] 使用 https 绑定证书到域名而非 IP 地址 【 _PKI_ _X.509_ 】
   - [x] 允许用户注册到系统
-    - [ ] 用户名的合法字符集范围：中文、英文字母、数字
-      - [ ] 类似：-、\_、.等合法字符集范围之外的字符不允许使用
+    - [x] 用户名的合法字符集范围：中文、英文字母、数字
+      - [x] 类似：-、\_、.等合法字符集范围之外的字符不允许使用
     - [x] 用户口令长度限制在 36 个字符之内
     - [x] 对用户输入的口令进行强度校验，禁止使用弱口令
   - [x] 使用合法用户名和口令登录系统
@@ -67,10 +67,20 @@ $ source env/bin/activate  # use `env\Scripts\activate` on Windows
 (env) $ pip install -r requirements.txt
 ```
 
+初次运行前需要生成服务器公私钥对：
+
+```
+python generate_server_key.py
+
+# 按照提示引入环境变量
+export SERVER_PRIVATE_KEY=xxx  # Linux
+set SERVER_PRIVATE_KEY=xxx  # Windows
+```
+
 初始化数据库并生成测试数据:
 
 ```
-(env) $ flask forge  # 初始用户名为: CUCer 密码: 123456
+(env) $ flask forge  # 初始用户名为: CUCer 密码: 7q:N37mayrMgiH!
 (env) $ flask run
 * Running on http://127.0.0.1:5001/
 ```

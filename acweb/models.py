@@ -8,12 +8,38 @@ from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from acweb import app, db
-
+from acweb.admin_locker import admin_locker
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, index=True)
     password_hash = db.Column(db.String(128))
+    encrypted_symmetric_key = db.Column(db.String(128))
+
+
+    def generate_save_symmetric_key(self) -> None:
+        """生成对称密钥 & 保存其加密后的密文"""
+        symmetric_key = b""  # TODO: 生成对称密钥
+        self.encrypted_symmetric_key = admin_locker.encrypt(symmetric_key).hex()
+        db.session.commit()
+
+    
+    def encrypt(self, content_: bytes) -> bytes:
+        """使用用户对称密钥加密 content_"""
+        self.encrypted_symmetric_key = ""  # TODO 删掉
+        symmetric_key = admin_locker.decrypt(bytes.fromhex(self.encrypted_symmetric_key))
+
+        encrypted_content = content_  # TODO: 使用用户对称密钥 symmetric_key 加密 content_
+        return encrypted_content
+    
+    def decrypt(self, content_: bytes) -> bytes:
+        """使用用户对称密钥解密 content_"""
+        self.encrypted_symmetric_key = ""  # TODO 删掉
+        symmetric_key = admin_locker.decrypt(bytes.fromhex(self.encrypted_symmetric_key))
+
+        decrypted_content = content_  # TODO: 使用用户对称密钥 symmetric_key 解密 content_
+        return decrypted_content
+
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
@@ -110,8 +136,10 @@ class CloudFile(db.Model):
         }
     
     @staticmethod
-    def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes):
+    def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes) -> "CloudFile":
         """保存文件元数据到数据库 & 保存加密后的文件到本地
+
+        return: CloudFile
         """
         file_size_ = len(content_bytes_)
 
@@ -122,7 +150,11 @@ class CloudFile(db.Model):
 
         file_save_name = file_hash_ # 保存文件时的文件名
 
-        encrypted_content_bytes = content_bytes_  # TODO: 需要对文件进行加密
+        user = db.session.get(User, user_id)
+
+        assert user is not None, "Error! user_id must be valid"
+
+        encrypted_content_bytes = user.encrypt(content_bytes_)  # TODO: user 需要对文件进行加密
 
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], file_save_name)
 
@@ -161,8 +193,12 @@ class CloudFile(db.Model):
         with open(file_path, "rb") as f:
             encrypted_content_bytes = f.read()
 
+        user = db.session.get(User, self.user_id)
+
+        assert user is not None, "Error! user_id must be valid"
+
         # TODO: 对文件进行解密
-        self.decrypted_content_bytes = encrypted_content_bytes
+        self.decrypted_content_bytes = user.decrypt(encrypted_content_bytes)
 
         return self.decrypted_content_bytes
 
