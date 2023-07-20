@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         {% if current_user.is_authenticated %}
-        {{ user.username }}'s 中传云盘
+        {{ current_user.username }}'s 中传云盘
         {% else %}
         中传放心传
         {% endif %}
@@ -29,7 +29,7 @@
     <h2>
         <img alt="Cloud Drive Logo" class="cloud_drive_logo" src="{{ url_for('static', filename='images/cloud_drive_logo.png') }}">
         {% if current_user.is_authenticated %}
-            {{ user.username }}'s 中传云盘
+            {{ current_user.username }}'s 中传云盘
         {% else %}
             中传放心传
         {% endif %}

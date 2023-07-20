@@ -83,7 +83,7 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 原项目由于在 `User` 类下既有 `name` 又有 `username` 字段，造成了后续代码的一些混乱，所以新建了 `delete_name` 分支，将 `name` 字段从整个项目逻辑中删除，只保留 `username` 字段
 
-![](.assets_img/READEME/delete_name_merge_request.png)
+![](.assets_img/README/delete_name_merge_request.png)
 
 ## [`update_pkg` 分支](https://github.com/Mr-Nobodyl/ac-web/pull/2)
 
@@ -95,7 +95,7 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 在后面遇到了一个小 bug：在服务器运行的过程中，如果运行 `test_acweb.py` 单元测试，再次访问页面将会出现 `Internal Server Error`
 
-![](.assets_img/READEME/Internal_Server_Error.png)
+![](.assets_img/README/Internal_Server_Error.png)
 
 后面 `debug` 了一会才发现，在 `test_acweb.py` 的单元测试中，原本将 `sqlite3` 使用内存数据库，但是在更新包版本后，[这段代码](https://github.com/Mr-Nobodyl/ac-web/blob/7bcd0744d373d271c2bc5d56c95eea7865a50b3a/test_acweb.py#L13) 并没有成功更新 `SQLALCHEMY_DATABASE_URI`，从而导致在测试时使用的是原本文件系统中的 `sqlite3` 数据库，而不是内存数据库
 
@@ -110,6 +110,36 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 参考 [Flask - Application Factories](https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/) 解决
 
 这里研究了一段时间，但是如果要使用 `工厂模式` 对 `app` 进行初始化的话，整个项目的架构的很多地方都需要做相应的修改，所以最后还是放弃了使用 `工厂模式`，而是使用 `环境变量` 的一个小 `trick` 来解决了这个问题（但是我在想这个问题归根到底应该还是 `SQLAcademy 2.0` 的一个小 bug，没有像 1.0 版本中在 app.update 中成功更新 `SQLALCHEMY_DATABASE_URI`）
+
+## 前端
+
+过程中的前端大概都是在网上找的模板，然后根据自己的需求进行修改
+
+![](.assets_img/README/share_setting_dev.png)
+
+一顿魔改之后
+
+![](.assets_img/README/share_setting_completed.png)
+
+## `unittest` 中的转义
+
+写了一个 `单元测试` 尝试在另外一个用户的账户登录下删除他人文件，为此还专门重构了代码，新建了 `TestUser` 类，进行多用户管理
+
+结果预期运行下面的这行测试：
+
+```python
+self.assertIn("Forbidden.\nYou don't have the permission to delete this item.", data)
+```
+
+一直断言错误，弄了好久才发现是因为 `data` 中的 `'` 被转义成了 `&#39;`，所以断言失败
+
+参考 [HTML ESCAPE CHARACTERS: COMPLETE LIST OF HTML ENTITIES](https://mateam.net/html-escape-characters/)
+
+```
+self.assertIn("Forbidden.\nYou don&#39;t have the permission to delete this item.", data)
+```
+
+![](.assets_img/README/unittest_html_bug.png)
 
 ## 参考
 
@@ -137,3 +167,9 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [Why is the output of werkzeugs `generate_password_hash` not constant?](https://stackoverflow.com/questions/23432478/why-is-the-output-of-werkzeugs-generate-password-hash-not-constant)
 - [Easy Python Unit Tests: Setup, Teardown, Fixtures, And More](https://hands-on.cloud/python-unit-tests/)
 - [How TO - Icon Buttons](https://www.w3schools.com/howto/howto_css_icon_buttons.asp)
+- [How TO - Responsive Form](https://www.w3schools.com/howto/howto_css_responsive_form.asp)
+- [sqlalchemy filter multiple columns](https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns)
+- [Copy text string on click](https://stackoverflow.com/questions/45071353/copy-text-string-on-click)
+- [HTML ESCAPE CHARACTERS: COMPLETE LIST OF HTML ENTITIES](https://mateam.net/html-escape-characters/)
+- [HTML <input> value Attribute](https://www.w3schools.com/tags/att_input_value.asp)
+- [HTML <form> method Attribute](https://www.w3schools.com/tags/att_form_method.asp)

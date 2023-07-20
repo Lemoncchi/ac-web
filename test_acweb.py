@@ -1,4 +1,6 @@
+import html
 import os
+import re
 import shutil
 import unittest
 
@@ -10,6 +12,40 @@ os.environ["UPLOAD_FOLDER"] = os.path.join(
 from acweb import app, db
 from acweb.commands import forge, initdb
 from acweb.models import CloudFile, User
+
+
+class TestUser():
+    """用于测试的 User 类"""
+
+    def __init__(self,username: str, password:str):
+        self.username = username
+        self.password = password
+
+    def login(self, client):
+        response = client.post('/login', data=dict(
+            username=self.username,
+            password=self.password,
+        ), follow_redirects=True)
+        # print('LOGIN', response.get_data(as_text=True))
+        # assert f"{self.username}'s 中传云盘" in response.get_data(as_text=True)
+        return response
+
+    def register(self, client, psw_repeat:str | None = None):
+        if psw_repeat is None:
+            psw_repeat = self.password
+
+        response = client.post('/register', data={
+            'username': self.username,
+            'psw': self.password,
+            'psw-repeat': psw_repeat,
+        }, follow_redirects=True)
+        # print('REGISTER', response.get_data(as_text=True))
+        return response
+    
+    def logout(self, client):
+        response = client.get('/logout', follow_redirects=True)
+        # print(response.get_data(as_text=True))
+        return response
 
 
 class AcWebTestCase(unittest.TestCase):
@@ -33,31 +69,35 @@ class AcWebTestCase(unittest.TestCase):
             )
             db.create_all()
 
-            user = User(username='test')
-            user.set_password('123')
+            self.test_user1 = TestUser('test1', 'yWy35dhxb3zf_Et')
+
+            user = User(username=self.test_user1.username)
+            user.set_password(self.test_user1.password)
             db.session.add(user)
             db.session.commit()
 
-            cloud_file = CloudFile.save_encrypt_commit(user_id=user.id, file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
-            self.test_cloud_file_id = cloud_file.id
+            self.test1_file_content = os.urandom(16)
+            # 测试文件的二进制明文内容
+
+            cloud_file = CloudFile.save_encrypt_commit(user_id=user.id, file_name_='Test CloudFile Title', content_bytes_=self.test1_file_content)
+            self.testuser1_cloud_file_id = cloud_file.id
             self.client = app.test_client()
             self.runner = app.test_cli_runner()
 
     def tearDown(self):
         with app.test_request_context():
-            CloudFile.delete_uncommit(self.test_cloud_file_id)
+            CloudFile.delete_uncommit(self.testuser1_cloud_file_id)
             db.session.remove()
             db.drop_all()
 
-    def login(self):
-        self.client.post('/login', data=dict(
-            username='test',
-            password='123'
-        ), follow_redirects=True)
-    
-    def logout(self):
-        response = self.client.get('/logout', follow_redirects=True)
-        print(response.get_data(as_text=True))
+    def share_file(self, cloud_file_id: int, expired_in:str = '10', customed_expired_in:str = '', allowed_download_times:str = '2', customed_allowed_download_times:str = ''):
+        response = self.client.post(
+            f"/share/{cloud_file_id}",
+            data=dict(expired_in='10', customed_expired_in='',allowed_download_times='2', customed_allowed_download_times=''),
+            follow_redirects=True,
+        )
+        # print(response.get_data(as_text=True))
+
 
     def test_app_exist(self):
         self.assertIsNotNone(app)
@@ -80,7 +120,7 @@ class AcWebTestCase(unittest.TestCase):
         self.assertNotIn('myDropzone', data)
         self.assertEqual(response.status_code, 200)
 
-        self.login()
+        self.test_user1.login(self.client)
         response = self.client.get('/')
         data = response.get_data(as_text=True)
         self.assertIn('Test CloudFile Title', data)
@@ -98,12 +138,9 @@ class AcWebTestCase(unittest.TestCase):
         self.assertNotIn('fa-share', data)
 
     def test_login(self):
-        response = self.client.post('/login', data=dict(
-            username='test',
-            password='123'
-        ), follow_redirects=True)
+        response = self.test_user1.login(self.client)
         data = response.get_data(as_text=True)
-        self.assertIn("test's 中传云盘", data)
+        self.assertIn(f"{self.test_user1.username}'s 中传云盘", data)
         self.assertIn('Login success.', data)
         self.assertIn('Logout', data)
         self.assertIn('fa-trash', data)
@@ -145,7 +182,7 @@ class AcWebTestCase(unittest.TestCase):
     #     self.assertIn('Invalid input.', data)
 
     def test_logout(self):
-        self.login()
+        self.test_user1.login(self.client)
 
         response = self.client.get('/logout', follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -158,7 +195,7 @@ class AcWebTestCase(unittest.TestCase):
         self.assertNotIn('fa-share', data)
 
     def test_settings(self):
-        self.login()
+        self.test_user1.login(self.client)
 
         response = self.client.get('/settings')
         data = response.get_data(as_text=True)
@@ -180,7 +217,7 @@ class AcWebTestCase(unittest.TestCase):
         self.assertIn('Grey Li', data)
 
     # def test_create_item(self):
-    #     self.login()
+    #     self.test_user1.login(self.client)
 
     #     response = self.client.post('/', data=dict(
     #         file_name='New CloudFile',
@@ -207,7 +244,7 @@ class AcWebTestCase(unittest.TestCase):
     #     self.assertIn('Invalid input.', data)
 
     # def test_update_item(self):
-    #     self.login()
+    #     self.test_user1.login(self.client)
 
     #     response = self.client.get('/cloud_file/edit/1')
     #     data = response.get_data(as_text=True)
@@ -242,7 +279,7 @@ class AcWebTestCase(unittest.TestCase):
 
     def test_login_delete_item(self):
         with app.test_request_context():
-            self.login()
+            self.test_user1.login(self.client)
             response = self.client.post('/cloud_file/delete/1', follow_redirects=True)
             data = response.get_data(as_text=True)
             self.assertIn('Item deleted.', data)
@@ -290,6 +327,96 @@ class AcWebTestCase(unittest.TestCase):
             self.assertEqual(User.query.first().username, 'peter')
             self.assertTrue(User.query.first().validate_password('456'))
 
+    def test_None_share_page_access_token(self):
+        """测试在没有分享页面访问令牌的情况下，访问分享页面"""
+        with app.test_request_context():
+            self.test_user1.login(self.client)
+            self.share_file(self.testuser1_cloud_file_id)
+            response = self.client.get('/share/download_page')
+            data = response.get_data(as_text=True)
+            self.assertIn('None share page access token.', data)
+    
+    def test_delete_others_file(self):
+        """尝试在另外一个用户的账户登录下删除他人文件"""
+        with app.test_request_context():
+            tmp_test_user2 = TestUser('test2', 'e28keQq2:b.EtxP')
+            tmp_test_user2.register(self.client)
+            rsp = tmp_test_user2.login(self.client)
+            self.assertIn(f"{tmp_test_user2.username}'s 中传云盘", rsp.get_data(as_text=True))
+
+            response = self.client.get(f'/cloud_file/delete/{self.testuser1_cloud_file_id}', follow_redirects=True)
+            data = response.get_data(as_text=True)
+            # print(data)
+            self.assertIn("Forbidden.\nYou don&#39;t have the permission to delete this item.", data)
+
+
+    def test_other_account_download_others_file(self):
+        """尝试使用他人账户通过非共享 URL（相当于个人下载 URL /cloud_file/downloads/content）下载他人文件"""
+        with app.test_request_context():
+            tmp_test_user2 = TestUser('test2', 'e28keQq2:b.EtxP')
+            tmp_test_user2.register(self.client)
+            rsp = tmp_test_user2.login(self.client)
+            self.assertIn(f"{tmp_test_user2.username}'s 中传云盘", rsp.get_data(as_text=True))
+
+            response = self.client.get(f'/cloud_file/downloads/content/{self.testuser1_cloud_file_id}', follow_redirects=True)
+            data = response.get_data(as_text=True)
+            # print(data)
+            self.assertIn("Forbidden.", data)
+            self.assertEqual(response.status_code, 403)
+
+    def test_unlogin_download_others_file(self):
+        """尝试使用他人的个人下载 URL (/cloud_file/downloads/content) 下载文件"""
+        with app.test_request_context():
+            response = self.client.get(
+                f"/cloud_file/downloads/content/{self.testuser1_cloud_file_id}",
+                follow_redirects=True,
+            )
+            data = response.get_data(as_text=True)
+            # print(data)
+            self.assertIn(
+                "Please login then download the file.",
+                data,
+            )
+            self.assertIn('<input type="text" placeholder="Enter Username" name="username" required>', data)
+
+
+    def test_shared_file_anonymous_download(self):
+        """测试匿名用户下载分享文件"""
+        self.test_user1.login(self.client)
+
+        # 先分享文件
+        response = self.client.post(
+            f"/share/{self.testuser1_cloud_file_id}",
+            data=dict(
+                expired_in="",
+                customed_expired_in="10",
+                allowed_download_times="",
+                customed_allowed_download_times="3",
+            ),
+            follow_redirects=True,
+        )
+        # 10 天内，允许下载 3 次
+
+        data = response.get_data(as_text=True)
+        # print(data)
+        self.assertIn("Item shared.", data)
+
+        match = re.search(r"copyToClipboard\('(.+?)', 'Download Page URL'\)", data)
+        self.assertIsNotNone(match)
+        share_url = match.group(1)
+
+        self.assertIsNotNone(share_url)
+        share_url = html.unescape(share_url)
+
+        # 退出登录
+        self.test_user1.logout(self.client)
+
+        download_url = share_url.replace("/share/download_page", "/share/download")
+        # print(download_url)
+        response = self.client.get(download_url, follow_redirects=True)
+
+        assert response.status_code == 200
+        assert response.data == self.test1_file_content
 
 if __name__ == '__main__':
     unittest.main()

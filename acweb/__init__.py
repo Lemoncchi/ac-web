@@ -43,6 +43,7 @@ app.config["ALLOWED_FILE_EXTENSIONS"] = os.getenv(
 )
 app.config['MAX_PASSWORD_LENGTH'] = os.getenv('MAX_PASSWORD_LENGTH', 36)
 app.config['MAX_USERNAME_LENGTH'] = os.getenv('MAX_USERNAME_LENGTH', 36)
+app.config['HMAC_KEY'] = os.getenv('HMAC_KEY', 'dev')
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)

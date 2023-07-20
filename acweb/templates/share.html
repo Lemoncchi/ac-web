@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/share.css') }}" type="text/css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="share_title">Share</h1>
+
+    <ul class="cloud_file-list single_cloud_file_list">
+        {% include 'elements/cloud_file_list_li.html' %}
+    </ul>
+
+    <hr>
+    <form action="{{ request.path }}" method="post">
+        <div class="row">
+            <div class="col-25">
+                <label for="expired_in">Expired in</label>
+            </div>
+            <div class="col-75">
+                <select id="expired_in" name="expired_in">
+                    <option value="">Input below</option>
+                    <option value="1">In 1 days</option>
+                    <option value="3">In 3 days</option>
+                    <option value="5">In 5 days</option>
+                    <option value="30">In 30 days</option>
+                    <option value="0">Unlimited</option>
+                </select>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-25">
+                <label for="customed_expired_in"></label>
+            </div>
+            <div class="col-75">
+                <input type="text" id="customed_expired_in" name="customed_expired_in" placeholder="Customed Input">
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-25">
+                <label for="allowed_download_times">Maximum download times</label>
+            </div>
+            <div class="col-75">
+                <select id="allowed_download_times" name="allowed_download_times">
+                    <option value="">Input below</option>
+                    <option value="1">1 times</option>
+                    <option value="3">3 times</option>
+                    <option value="5">5 times</option>
+                    <option value="30">30 times</option>
+                    <option value="0">Unlimited</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-25">
+                <label for="customed_allowed_download_times"></label>
+            </div>
+            <div class="col-75">
+                <input type="text" id="customed_allowed_download_times" name="customed_allowed_download_times" placeholder="Customed Input">
+            </div>
+        </div>
+
+
+        {#
+        <div class="row">
+            <div class="col-25">
+                <label for="subject">Subject</label>
+            </div>
+            <div class="col-75">
+                <textarea id="subject" name="subject" placeholder="Write something.." style="height:200px"></textarea>
+            </div>
+        </div>
+        #}
+        <div class="row submit_row">
+            <input type="submit" value="Submit">
+        </div>
+        
+    </form>
+</div>
+
+{% endblock %}
