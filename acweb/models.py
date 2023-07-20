@@ -1,7 +1,8 @@
 import os
 import typing
 from datetime import datetime
-
+import hmac
+import hashlib
 import werkzeug.datastructures
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -129,17 +130,19 @@ class SharedFileInfo(db.Model):
     cloud_file_id = db.Column(db.Integer, db.ForeignKey('cloud_file.id'))  # 外键
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # 设置为分享的 UTC 时间，默认设置为当前 UTC 时间
+
     share_code_hash = db.Column(db.String(128))
+    share_page_access_token_hash = db.Column(db.String(128), index=True)  # 分享页面访问令牌的「哈希」
 
     expiry_time = db.Column(db.DateTime)  # UTC 过期时间，None 表示永不过期
 
     allowed_download_count = db.Column(db.Integer, default=0)  # 允许下载次数，0 表示无限制
     used_download_count = db.Column(db.Integer, default=0)  # 已经下载次数
 
-    share_page_access_token_hash = db.Column(db.String(128), index=True)  # 分享页面访问令牌的「哈希」
+    
 
     def __repr__(self):
-        return f'<SharedFileInfo id: {self.id}, cloud_file_id: {self.cloud_file_id}, owner_id: {self.owner_id}, timestamp: {self.timestamp}, share_code_hash: {self.share_code_hash}, expiry_time: {self.expiry_time}, allowed_download_count: {self.allowed_download_count}, used_download_count: {self.used_download_count}>'
+        return f'<SharedFileInfo id: {self.id}, cloud_file_id: {self.cloud_file_id}, owner_id: {self.owner_id}, timestamp: {self.timestamp}, share_code_hash: {self.share_code_hash}, share_page_access_token_hash: {self.share_page_access_token_hash},expiry_time: {self.expiry_time}, allowed_download_count: {self.allowed_download_count}, used_download_count: {self.used_download_count}>'
 
 
     def is_expired(self) -> bool:
@@ -162,7 +165,7 @@ class SharedFileInfo(db.Model):
         return random_string
 
 
-    def generate_share_code_and_access_token(
+    def generate_save_share_code_and_access_token(
         self, share_code_length: int = 16, share_page_access_token_hash_length: int = 32
     ) -> typing.Tuple[str, str]:
         """生成 `share_code` & `share_page_access` 并保存其哈希到数据库
@@ -187,11 +190,18 @@ class SharedFileInfo(db.Model):
             share_page_access_token_hash_length
         )
 
-        self.share_page_access_token_hash = generate_password_hash(
-            share_page_access_token,
-            method="pbkdf2:sha256:600000",
-            salt_length=16,
-        )
+        # 由于 share_page_access_token_hash 是索引，我们既需要保证其唯一性
+        # 服务器端还能够计算其 hash 值，这里我们需要服务器端保存其盐值
+
+        self.share_page_access_token_salt = self._generate_random_string(16)
+
+        self.share_page_access_token_hash = hmac.new(
+            app.config['HMAC_KEY'].encode("utf-8"),
+            share_page_access_token.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+
+        db.session.commit()
 
         return share_code, share_page_access_token  # 不会存储，妥善保存
 
@@ -207,10 +217,15 @@ class SharedFileInfo(db.Model):
 
     
     @staticmethod
-    def get_by_share_page_access_token(share_page_access_token: str) -> typing.Optional["SharedFileInfo"]:
-        share_page_access_token_hash = generate_password_hash(
-            share_page_access_token,
-            method="pbkdf2:sha256:600000",
-            salt_length=16,
-        )
-        return SharedFileInfo.query.filter_by(share_page_access_token_hash=share_page_access_token_hash).first()
+    def get_by_share_page_access_token(
+        share_page_access_token: str,
+    ) -> typing.Optional["SharedFileInfo"]:
+        share_page_access_token_hash = hmac.new(
+            app.config["HMAC_KEY"].encode("utf-8"),
+            share_page_access_token.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+
+        return SharedFileInfo.query.filter_by(
+            share_page_access_token_hash=share_page_access_token_hash
+        ).first()

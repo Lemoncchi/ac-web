@@ -331,7 +331,7 @@ def share_success(shared_file_info_id):
     (
         share_code,
         share_page_access_token,
-    ) = shared_file_info.generate_share_code_and_access_token()
+    ) = shared_file_info.generate_save_share_code_and_access_token()
 
     share_download_page_url = url_for(
         "shared_file_download_page",
@@ -358,6 +358,8 @@ def shared_file_download_page():
         flash('None share page access token.')
         abort(403)  # 可根据 `安全性要求` 不提供此信息，并返回 404
 
+    # print(f"share_code: {share_code}")
+    # print(f"share_page_access_token: {share_page_access_token}")
     shared_file_info = SharedFileInfo.get_by_share_page_access_token(share_page_access_token=share_page_access_token)
 
     if shared_file_info is None:
