@@ -149,3 +149,4 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [How TO - Icon Buttons](https://www.w3schools.com/howto/howto_css_icon_buttons.asp)
 - [How TO - Responsive Form](https://www.w3schools.com/howto/howto_css_responsive_form.asp)
 - [sqlalchemy filter multiple columns](https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns)
+- [Copy text string on click](https://stackoverflow.com/questions/45071353/copy-text-string-on-click)

@@ -27,6 +27,11 @@
                     class="fa fa-trash"></i></button>
             <button class="icon_btn" onclick="window.location.href='{{ url_for('download_content', cloud_file_id=cloud_file.id) }}'"
                 download><i class="fa fa-download" title="Download"></i></button>
+
+            <script src = "{{ url_for('static', filename='js/copy_to_clipboard.js') }}"></script>
+            <button class="icon_btn" onclick="copyToClipboard('{{ cloud_file.file_hash }}', 'File Hash')" title="Copy file hash to clipboard"><i
+                    class="fa fa-copy"></i></button>
+
             <button class="icon_btn" onclick="window.location.href='{{ url_for('share', cloud_file_id=cloud_file.id) }}'"><i
                     class="fa fa-share" title="Share"></i></button>
             <button class="icon_btn" onclick="window.location.href='{{ url_for('edit', cloud_file_id=cloud_file.id) }}'"><i
