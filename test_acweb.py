@@ -1,4 +1,6 @@
+import html
 import os
+import re
 import shutil
 import unittest
 
@@ -10,6 +12,7 @@ os.environ["UPLOAD_FOLDER"] = os.path.join(
 from acweb import app, db
 from acweb.commands import forge, initdb
 from acweb.models import CloudFile, User
+
 
 class TestUser():
     """用于测试的 User 类"""
@@ -73,7 +76,10 @@ class AcWebTestCase(unittest.TestCase):
             db.session.add(user)
             db.session.commit()
 
-            cloud_file = CloudFile.save_encrypt_commit(user_id=user.id, file_name_='Test CloudFile Title', content_bytes_=os.urandom(16))
+            self.test1_file_content = os.urandom(16)
+            # 测试文件的二进制明文内容
+
+            cloud_file = CloudFile.save_encrypt_commit(user_id=user.id, file_name_='Test CloudFile Title', content_bytes_=self.test1_file_content)
             self.testuser1_cloud_file_id = cloud_file.id
             self.client = app.test_client()
             self.runner = app.test_cli_runner()
@@ -372,6 +378,74 @@ class AcWebTestCase(unittest.TestCase):
             )
             self.assertIn('<input type="text" placeholder="Enter Username" name="username" required>', data)
 
+
+    def test_shared_file_anonymous_download(self):
+        self.test_user1.login(self.client)
+
+        # 先分享文件
+        response = self.client.post(
+            f"/share/{self.testuser1_cloud_file_id}",
+            data=dict(
+                expired_in="",
+                customed_expired_in="10",
+                allowed_download_times="",
+                customed_allowed_download_times="3",
+            ),
+            follow_redirects=True,
+        )
+        # 10 天内，允许下载 3 次
+
+        data = response.get_data(as_text=True)
+        print(data)
+
+        match = re.search(r"copyToClipboard\('(.+?)'", data)
+        self.assertIsNotNone(match)
+        share_url = match.group(1)
+        self.assertIn("Item shared.", data)
+
+        # 退出登录
+        self.test_user1.logout(self.client)
+
+        download_url = share_url.replace("share/download_page", "/share/download")
+        response = self.client.get(download_url, follow_redirects=True)
+
+    
+    def test_shared_file_anonymous_download(self):
+        self.test_user1.login(self.client)
+
+        # 先分享文件
+        response = self.client.post(
+            f"/share/{self.testuser1_cloud_file_id}",
+            data=dict(
+                expired_in="",
+                customed_expired_in="10",
+                allowed_download_times="",
+                customed_allowed_download_times="3",
+            ),
+            follow_redirects=True,
+        )
+        # 10 天内，允许下载 3 次
+
+        data = response.get_data(as_text=True)
+        # print(data)
+        self.assertIn("Item shared.", data)
+
+        match = re.search(r"copyToClipboard\('(.+?)', 'Download Page URL'\)", data)
+        self.assertIsNotNone(match)
+        share_url = match.group(1)
+
+        self.assertIsNotNone(share_url)
+        share_url = html.unescape(share_url)
+
+        # 退出登录
+        self.test_user1.logout(self.client)
+
+        download_url = share_url.replace("/share/download_page", "/share/download")
+        # print(download_url)
+        response = self.client.get(download_url, follow_redirects=True)
+
+        assert response.status_code == 200
+        assert response.data == self.test1_file_content
 
 if __name__ == '__main__':
     unittest.main()
