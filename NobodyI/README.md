@@ -171,3 +171,5 @@ self.assertIn("Forbidden.\nYou don&#39;t have the permission to delete this item
 - [sqlalchemy filter multiple columns](https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns)
 - [Copy text string on click](https://stackoverflow.com/questions/45071353/copy-text-string-on-click)
 - [HTML ESCAPE CHARACTERS: COMPLETE LIST OF HTML ENTITIES](https://mateam.net/html-escape-characters/)
+- [HTML <input> value Attribute](https://www.w3schools.com/tags/att_input_value.asp)
+- [HTML <form> method Attribute](https://www.w3schools.com/tags/att_form_method.asp)

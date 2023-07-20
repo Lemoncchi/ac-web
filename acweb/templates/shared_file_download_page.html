@@ -2,6 +2,35 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/share.css') }}" type="text/css">
+
+<style>
+    /* Set a style for the submit button */
+    .downloadbtn {
+        background-color: #04AA6D;
+        color: white;
+        padding: 16px 20px;
+        margin: 15px 0 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        opacity: 0.9;
+    }
+
+    .downloadbtn:hover {
+        opacity: 1;
+    }
+
+    input[type=text]:focus {
+        background-color: #ddd;
+        outline: none;
+    }
+
+    hr {
+        border: 1px solid #c4c4c4;
+        margin: 35px 0 0px 0;
+    }
+</style>
+
 {% endblock %}
 
 {% block content %}
@@ -35,9 +64,21 @@
 
     <hr>
     
-    <div class="row submit_row">
-        <input type="submit" value="Download">
-    </div>
+    <form action="{{ url_for('shared_file_download') }}" method="get">
+        <div class="container">
+            <p>Please input the share code to download the file.
+            </p>
+            
+            <input type="hidden" placeholder="Enter file's Share Code" name="share_page_access_token" id="share_page_access_token" value="{{ share_page_access_token }}">
+
+            <label for="share_code"><b>Share Code</b></label>
+            <input type="text" placeholder="Enter file's Share Code" name="share_code" id="share_code" value="{{ share_code }}" required>
+    
+            <button type="row submit_row" class="downloadbtn">Download</button>
+        </div>
+    
+    </form>
+
     <img alt="Cloud loading" class="cloud_loading" src="{{ url_for('static', filename='images/cloud_load.gif') }}"
         file_name="中传放心传">
 </div>

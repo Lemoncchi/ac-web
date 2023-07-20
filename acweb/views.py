@@ -371,5 +371,24 @@ def shared_file_download_page():
 
     cloud_file = db.session.get(CloudFile, shared_file_info.cloud_file_id)
 
-    return render_template('shared_file_download_page.html', cloud_file=cloud_file, shared_file_info=shared_file_info, share_code=share_code)
+    return render_template('shared_file_download_page.html', cloud_file=cloud_file, shared_file_info=shared_file_info, share_code=share_code, share_page_access_token=share_page_access_token)
 
+
+@app.route('/share/download', methods=['GET'])
+def shared_file_download():
+    share_code = request.args.get('share_code')
+    share_page_access_token = request.args.get('share_page_access_token')
+
+    if not share_page_access_token:
+        flash('None share page access token.')
+        abort(403)  # 可根据 `安全性要求` 不提供此信息，并返回 404
+
+    if not share_code:
+        flash('Please input your share code.')
+        return redirect(url_for('shared_file_download_page', share_page_access_token=share_page_access_token))
+
+    shared_file_info = SharedFileInfo.get_by_share_page_access_token(share_page_access_token=share_page_access_token)
+
+    if shared_file_info is None:
+        flash('Invalid share page access token.')
+        return redirect(url_for('shared_file_download_page', share_page_access_token=share_page_access_token))
