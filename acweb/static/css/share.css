@@ -27,10 +27,20 @@ input[type=submit] {
     float: right;
 }
 
+.copy_share_url_to_clipboard {
+    background-color: #04AA6D;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    float: right;
+}
+
 /* Style the container */
 .container {
     border-radius: 5px;
-    background-color: #f2f2f2;
+    background-color: #e3f4f7;
     padding: 20px;
 }
 
@@ -92,10 +102,11 @@ button.icon_btn {
 }
 
 button.icon_btn:hover {
-    background-color: RoyalBlue;
+    background-color: rgb(65, 201, 225);
 }
 
 .single_cloud_file_list {
     /* background-color: #ffea9e; */
-    background-color: rgb(215, 224, 252);
+    /* background-color: rgb(215, 224, 252); */
+    background-color: rgb(237, 242, 255);
 }

@@ -1,11 +1,12 @@
 import os
+import typing
 from datetime import datetime
-from acweb import app
+
 import werkzeug.datastructures
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from acweb import db
+from acweb import app, db
 
 
 class User(db.Model, UserMixin):
@@ -135,7 +136,7 @@ class SharedFileInfo(db.Model):
     allowed_download_count = db.Column(db.Integer, default=0)  # 允许下载次数，0 表示无限制
     used_download_count = db.Column(db.Integer, default=0)  # 已经下载次数
 
-    share_page_access_token_hash = db.Column(db.String(128))  # 分享页面访问令牌的「哈希」
+    share_page_access_token_hash = db.Column(db.String(128), index=True)  # 分享页面访问令牌的「哈希」
 
     def __repr__(self):
         return f'<SharedFileInfo id: {self.id}, cloud_file_id: {self.cloud_file_id}, owner_id: {self.owner_id}, timestamp: {self.timestamp}, share_code_hash: {self.share_code_hash}, expiry_time: {self.expiry_time}, allowed_download_count: {self.allowed_download_count}, used_download_count: {self.used_download_count}>'
@@ -161,12 +162,18 @@ class SharedFileInfo(db.Model):
         return random_string
 
 
-    def set_share_code(self, share_code_length: int = 16, share_page_access_token_hash_length: int = 16) -> str:
-        """生成 `分享码` 并保存 `分享码哈希` 到数据库，生成并保存 `share_page_access_token`，返回 `分享码字符串`"""
+    def generate_share_code_and_access_token(
+        self, share_code_length: int = 16, share_page_access_token_hash_length: int = 32
+    ) -> typing.Tuple[str, str]:
+        """生成 `share_code` & `share_page_access` 并保存其哈希到数据库
+
+        返回 `share_code` & `share_page_access_token字符串`"""
 
         assert share_code_length >= 8, "share_code_length must >= 8"
         assert share_code_length <= 32, "share_code_length must <= 32"
-        assert self.share_code_hash is None, "Error! share_code_hash must have not been set before"
+        assert (
+            self.share_code_hash is None
+        ), "Error! share_code_hash must have not been set before"
 
         share_code = self._generate_random_string(share_code_length)
 
@@ -176,13 +183,17 @@ class SharedFileInfo(db.Model):
             salt_length=16,
         )
 
+        share_page_access_token = self._generate_random_string(
+            share_page_access_token_hash_length
+        )
+
         self.share_page_access_token_hash = generate_password_hash(
-            self._generate_random_string(share_page_access_token_hash_length),
+            share_page_access_token,
             method="pbkdf2:sha256:600000",
             salt_length=16,
         )
 
-        return share_code
+        return share_code, share_page_access_token  # 不会存储，妥善保存
 
 
     def validate_share_code(self, share_code: str) -> bool:
@@ -193,3 +204,13 @@ class SharedFileInfo(db.Model):
     def validate_share_page_access_token(self, share_page_access_token: str) -> bool:
         """验证 `分享页面访问令牌`"""
         return check_password_hash(self.share_page_access_token_hash, share_page_access_token)
+
+    
+    @staticmethod
+    def get_by_share_page_access_token(share_page_access_token: str) -> typing.Optional["SharedFileInfo"]:
+        share_page_access_token_hash = generate_password_hash(
+            share_page_access_token,
+            method="pbkdf2:sha256:600000",
+            salt_length=16,
+        )
+        return SharedFileInfo.query.filter_by(share_page_access_token_hash=share_page_access_token_hash).first()

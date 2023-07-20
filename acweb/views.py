@@ -260,7 +260,7 @@ def share(cloud_file_id):
             SharedFileInfo.cloud_file_id == cloud_file_id,
             SharedFileInfo.expiry_time < datetime.utcnow(),
         )
-    )
+    ).all()
 
     if request.method == 'GET':
         if current_file_shared_file_info_list:
@@ -303,27 +303,64 @@ def share(cloud_file_id):
         db.session.commit()
         flash('Item shared.')
         # print(shared_file_info)
-        return redirect(url_for('index'))
+        return redirect(url_for('share_success', shared_file_info_id=shared_file_info.id))
         
     return render_template('share.html', cloud_file=cloud_file)
 
 
-@app.route('/share/download/<int:shared_file_info_id>', methods=['GET', 'POST'])
-def shared_file_download(shared_file_info_id: int):
+@app.route("/share/success/<int:shared_file_info_id>", methods=["GET", "POST"])
+@login_required
+def share_success(shared_file_info_id):
     shared_file_info = db.session.get(SharedFileInfo, shared_file_info_id)
-    share_page_access_token = request.args.get('share_page_access_token')
-
     if shared_file_info is None:
         abort(404)
-    if share_page_access_token is None:
-        flash('None share code access token.')
-        abort(403)  # 可根据 `安全性要求` 不提供此信息，并返回 404
 
-    if not shared_file_info.validate_share_page_access_token(share_page_access_token=share_page_access_token):  # 验证分享码失败
-        flash('Invalid share code.')  # 可根据 `安全性要求` 不提供此信息，并返回 404
+    cloud_file = db.session.get(CloudFile, shared_file_info.cloud_file_id)
+    # 身份验证
+    if current_user.id != cloud_file.user_id:
+        flash("Forbidden.")
         abort(403)
 
+    (
+        share_code,
+        share_page_access_token,
+    ) = shared_file_info.generate_share_code_and_access_token()
+
+    share_download_page_url = url_for(
+        "shared_file_download_page",
+        _external=True,
+        share_page_access_token=share_page_access_token,
+        share_code=share_code,
+    )
+
+    return render_template(
+        "share_success.html",
+        cloud_file=cloud_file,
+        shared_file_info=shared_file_info,
+        share_code=share_code,
+        share_page_access_token=share_page_access_token,
+        share_download_page_url=share_download_page_url,
+    )
+
+@app.route('/share/download_page', methods=['GET'])
+def shared_file_download_page():
+    share_code = request.args.get('share_code')
+    share_page_access_token = request.args.get('share_page_access_token')
+
+    if not share_page_access_token:
+        flash('None share page access token.')
+        abort(403)  # 可根据 `安全性要求` 不提供此信息，并返回 404
+
+    shared_file_info = SharedFileInfo.get_by_share_page_access_token(share_page_access_token=share_page_access_token)
+
+    if shared_file_info is None:
+        flash('Invalid share page access token.')
+        abort(404)
+
+    if not share_code:
+        flash('Please input your share code.')
 
     cloud_file = db.session.get(CloudFile, shared_file_info.cloud_file_id)
 
-    return render_template('shared_file_download.html', cloud_file=cloud_file, shared_file_info=shared_file_info)
+    return render_template('shared_file_download_page.html', cloud_file=cloud_file, shared_file_info=shared_file_info, share_code=share_code)
+

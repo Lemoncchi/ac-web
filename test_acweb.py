@@ -321,13 +321,13 @@ class AcWebTestCase(unittest.TestCase):
             self.assertEqual(User.query.first().username, 'peter')
             self.assertTrue(User.query.first().validate_password('456'))
 
-    def test_None_share_code_access_token(self):
+    def test_None_share_page_access_token(self):
         with app.test_request_context():
             self.test_user1.login(self.client)
             self.share_file(self.testuser1_cloud_file_id)
-            response = self.client.get(f'/share/download/{self.testuser1_cloud_file_id}')
+            response = self.client.get('/share/download_page')
             data = response.get_data(as_text=True)
-            self.assertIn('None share code access token.', data)
+            self.assertIn('None share page access token.', data)
     
     def test_delete_others_file(self):
         """尝试在另外一个用户的账户登录下删除他人文件"""

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/share.css') }}" type="text/css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="share_title">Share Success!</h1>
+
+    <ul class="cloud_file-list single_cloud_file_list">
+        {% include 'elements/cloud_file_list_li.html' %}
+    </ul>
+
+    <hr>
+
+        <p class="share_hint">
+            Please click the button below to copy the share URL to your clipboard.
+        </p>
+        <p class="share_hint">
+            Then you can send it to your friends!
+        </p>
+
+    <hr>
+        <!-- {{ share_download_page_url }} -->
+        
+    <div class="row submit_row">
+        <button class="copy_share_url_to_clipboard" onclick="copyToClipboard('{{ share_download_page_url }}', 'Download Page URL')"
+                title="Copy share URL to clipboard">Copy Share URL
+        </button>
+    </div>
+
+    </form>
+</div>
+<img alt="Cloud loading" class="cloud_loading" src="{{ url_for('static', filename='images/cloud_load.gif') }}"
+    file_name="中传放心传">
+{% endblock %}
