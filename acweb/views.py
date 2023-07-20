@@ -50,8 +50,9 @@ def uploads():
                 return redirect(url_for('index'))
 
             content_bytes = f.read()
+            pub_key,pri_key,sym_key = current_user.public_key,current_user.private_key,current_user.symmetric_key
 
-            cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name,current_user.public_key,current_user.private_key,current_user.symmetric_key,content_bytes)
+            cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name,pub_key,pri_key,sym_key,content_bytes)
 
             flash('Your file has been uploaded successfully.')
             return redirect(url_for('index'))
@@ -113,8 +114,10 @@ def download_content(cloud_file_id: int):
                 abort(403)  # Forbidden
         else:
             redirect(url_for('login'))
-
-    cloud_file.decrypt()
+    
+    pub_key,pri_key,sym_key = current_user.public_key,current_user.private_key,current_user.symmetric_key
+    t = cloud_file.decrypt(pub_key,pri_key,sym_key)
+    print(type(t))
 
     return send_file(
         path_or_file=BytesIO(cloud_file.decrypted_content_bytes),

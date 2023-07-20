@@ -34,7 +34,7 @@ class User(db.Model, UserMixin):
         self.public_key, self.private_key = security_code.encrypt_generate()
 
     # 为用户生成一个随机对称密钥
-    def symmetric_key(self,public_key):
+    def symmetric_key_generation(self,public_key):
         key = security_code.symmetric_generate()
         self.symmetric_key = security_code.RSA_encode(key,public_key)   #对对称密钥使用公钥加密
 
@@ -47,7 +47,8 @@ class CloudFile(db.Model):
     file_hash = db.Column(db.String(128))
     file_size = db.Column(db.Integer)
     is_shared = db.Column(db.Boolean, default=False)
-    encrypted_content_bytes = db.Column(db.LargeBinary(2048))   #存加密文件
+    encrypted_content_bytes = db.Column(db.LargeBinary(1024*1024))   #存加密文件
+    decrypted_content_bytes = db.Column(db.LargeBinary(1024*1024))   #存解密文件
     sign = db.Column(db.String(2048)) #存签名
 
 
@@ -113,15 +114,16 @@ class CloudFile(db.Model):
         return True
 
 
-    def decrypt(self) -> bytes:
+    def decrypt(self,pub_key,pri_key,sym_key) -> bytes:
         """对文件内容进行解密"""
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], self.file_save_name)
 
         with open(file_path, "rb") as f:
             encrypted_content_bytes = f.read()
 
-        # TODO: 对文件进行解密
-        self.decrypted_content_bytes = encrypted_content_bytes
+        # 对文件进行解密
+        s_key = security_code.RSA_decode(sym_key,pri_key)  #对对称密钥先解密再使用
+        self.decrypted_content_bytes = security_code.symmetric_decode(encrypted_content_bytes,s_key)
 
         return self.decrypted_content_bytes
 

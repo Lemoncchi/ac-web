@@ -37,7 +37,7 @@ class AcWebTestCase(unittest.TestCase):
             user = User(username='test')
             user.set_password('123')
             user.public_private_key()  # 随机生成公私钥对
-            user.symmetric_key(user.public_key)  # 随机生成对称密钥
+            user.symmetric_key_generation(user.public_key)  # 随机生成对称密钥
             db.session.add(user)
             db.session.commit()
 
