@@ -418,5 +418,12 @@ class AcWebTestCase(unittest.TestCase):
         assert response.status_code == 200
         assert response.data == self.test1_file_content
 
+    def test_file_sha256_sum(self):
+        """测试文件的 sha256 哈希值"""
+        with app.test_request_context():
+            import hashlib
+            cloud_file = CloudFile.query.get(self.testuser1_cloud_file_id)
+            self.assertEqual(cloud_file.file_hash, hashlib.sha256(self.test1_file_content).hexdigest())
+
 if __name__ == '__main__':
     unittest.main()

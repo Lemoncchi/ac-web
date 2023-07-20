@@ -36,7 +36,7 @@ class CloudFile(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)  # 默认设置为当前 UTC 时间
     file_name = db.Column(db.String(app.config['MAX_FILE_NAME_LENGTH']))
-    file_save_name = db.Column(db.String(60))
+    file_save_name = db.Column(db.String(128))
     file_hash = db.Column(db.String(128))
     file_size = db.Column(db.Integer)
 
@@ -59,11 +59,14 @@ class CloudFile(db.Model):
     def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes):
         """保存文件元数据到数据库 & 保存加密后的文件到本地
         """
-        file_save_name = file_name_  # TODO: 后面需要对文件名进行处理
-
         file_size_ = len(content_bytes_)
 
-        file_hash_ = None  # TODO: 需要对文件进行安全 hash
+        import hashlib
+
+        file_hash_ = hashlib.sha256(content_bytes_).hexdigest()
+        # 对文件进行安全 hash
+
+        file_save_name = file_hash_ # 保存文件时的文件名
 
         encrypted_content_bytes = content_bytes_  # TODO: 需要对文件进行加密
 
