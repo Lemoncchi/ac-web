@@ -373,22 +373,94 @@ def shared_file_download_page():
 
     return render_template('shared_file_download_page.html', cloud_file=cloud_file, shared_file_info=shared_file_info, share_code=share_code, share_page_access_token=share_page_access_token)
 
-
-@app.route('/share/download', methods=['GET'])
+@app.route("/share/download", methods=["GET"])
 def shared_file_download():
-    share_code = request.args.get('share_code')
-    share_page_access_token = request.args.get('share_page_access_token')
+    share_code = request.args.get("share_code")
+    share_page_access_token = request.args.get("share_page_access_token")
 
     if not share_page_access_token:
-        flash('None share page access token.')
+        flash("None share page access token.")
         abort(403)  # 可根据 `安全性要求` 不提供此信息，并返回 404
 
     if not share_code:
-        flash('Please input your share code.')
-        return redirect(url_for('shared_file_download_page', share_page_access_token=share_page_access_token))
+        flash("Please input your share code.")
+        return redirect(
+            url_for(
+                "shared_file_download_page",
+                share_page_access_token=share_page_access_token,
+            )
+        )
 
-    shared_file_info = SharedFileInfo.get_by_share_page_access_token(share_page_access_token=share_page_access_token)
+    shared_file_info = SharedFileInfo.get_by_share_page_access_token(
+        share_page_access_token=share_page_access_token
+    )
 
     if shared_file_info is None:
-        flash('Invalid share page access token.')
-        return redirect(url_for('shared_file_download_page', share_page_access_token=share_page_access_token))
+        flash("Invalid share page access token.")
+        return redirect(
+            url_for(
+                "shared_file_download_page",
+                share_page_access_token=share_page_access_token,
+            )
+        )
+
+    cloud_file = db.session.get(CloudFile, shared_file_info.cloud_file_id)
+
+    assert cloud_file is not None, "cloud_file is None!"
+
+    if not shared_file_info.validate_share_code(share_code):
+        flash("Invalid share code.")
+        return redirect(
+            url_for(
+                "shared_file_download_page",
+                cloud_file=cloud_file,
+                shared_file_info=shared_file_info,
+                share_code=share_code,
+                share_page_access_token=share_page_access_token,
+            )
+        )
+
+    if shared_file_info.allowed_download_count == 0:
+        pass  # 无限制
+    elif shared_file_info.allowed_download_count > 0:  # 有限制
+        if (
+            shared_file_info.allowed_download_count
+            <= shared_file_info.used_download_count
+        ):
+            flash("The download times of this file has reached the maximum.")
+            return redirect(
+                url_for(
+                    "shared_file_download_page",
+                    cloud_file=cloud_file,
+                    shared_file_info=shared_file_info,
+                    share_code=share_code,
+                    share_page_access_token=share_page_access_token,
+                )
+            )
+        
+    # 有效期验证
+    from datetime import datetime
+    if shared_file_info.expiry_time is not None:  # 非永久有效
+        if shared_file_info.expiry_time < datetime.utcnow():
+            flash("The file has expired.")
+            return redirect(
+                url_for(
+                    "shared_file_download_page",
+                    cloud_file=cloud_file,
+                    shared_file_info=shared_file_info,
+                    share_code=share_code,
+                    share_page_access_token=share_page_access_token,
+                )
+            )
+
+    # 进入下载流程
+    shared_file_info.used_download_count += 1
+    db.session.commit()
+
+    decrypted_content_bytes = cloud_file.decrypt()
+
+    return send_file(
+        path_or_file=BytesIO(decrypted_content_bytes),
+        download_name=cloud_file.file_name,
+        as_attachment=True,
+    )
