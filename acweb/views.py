@@ -102,18 +102,18 @@ def delete(cloud_file_id):
 
 @app.route("/cloud_file/downloads/content/<int:cloud_file_id>", methods=["GET", "POST"])
 def download_content(cloud_file_id: int):
-    """下载文件内容"""
+    """仅供文件所有者下载文件内容，不提供分享文件下载"""
     cloud_file = db.session.get(CloudFile, cloud_file_id)
     if cloud_file is None:
         abort(404)
 
-    else: # 私人非共享文件
-        if current_user.is_authenticated:
-            if current_user.id != cloud_file.user_id:
-                flash('Forbidden.')
-                abort(403)  # Forbidden
-        else:
-            redirect(url_for('login'))
+    if current_user.is_authenticated:
+        if current_user.id != cloud_file.user_id:
+            flash('Forbidden.')
+            abort(403)  # Forbidden
+    else:  # 未登录下载通过 `非分享下载` 下载文件内容
+        flash('Please login then download the file.')
+        return redirect(url_for('login'))
 
     cloud_file.decrypt()
 

@@ -343,5 +343,35 @@ class AcWebTestCase(unittest.TestCase):
             self.assertIn("Forbidden.\nYou don&#39;t have the permission to delete this item.", data)
 
 
+    def test_other_account_download_others_file(self):
+        """尝试使用他人账户通过非共享 URL（相当于个人下载 URL /cloud_file/downloads/content）下载他人文件"""
+        with app.test_request_context():
+            tmp_test_user2 = TestUser('test2', 'e28keQq2:b.EtxP')
+            tmp_test_user2.register(self.client)
+            rsp = tmp_test_user2.login(self.client)
+            self.assertIn(f"{tmp_test_user2.username}'s 中传云盘", rsp.get_data(as_text=True))
+
+            response = self.client.get(f'/cloud_file/downloads/content/{self.testuser1_cloud_file_id}', follow_redirects=True)
+            data = response.get_data(as_text=True)
+            # print(data)
+            self.assertIn("Forbidden.", data)
+            self.assertEqual(response.status_code, 403)
+
+    def test_unlogin_download_others_file(self):
+        """尝试使用他人的个人下载 URL (/cloud_file/downloads/content) 下载文件"""
+        with app.test_request_context():
+            response = self.client.get(
+                f"/cloud_file/downloads/content/{self.testuser1_cloud_file_id}",
+                follow_redirects=True,
+            )
+            data = response.get_data(as_text=True)
+            # print(data)
+            self.assertIn(
+                "Please login then download the file.",
+                data,
+            )
+            self.assertIn('<input type="text" placeholder="Enter Username" name="username" required>', data)
+
+
 if __name__ == '__main__':
     unittest.main()
