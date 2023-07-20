@@ -121,6 +121,26 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 
 ![](.assets_img/README/share_setting_completed.png)
 
+## `unittest` 中的转义
+
+写了一个 `单元测试` 尝试在另外一个用户的账户登录下删除他人文件，为此还专门重构了代码，新建了 `TestUser` 类，进行多用户管理
+
+结果预期运行下面的这行测试：
+
+```python
+self.assertIn("Forbidden.\nYou don't have the permission to delete this item.", data)
+```
+
+一直断言错误，弄了好久才发现是因为 `data` 中的 `'` 被转义成了 `&#39;`，所以断言失败
+
+参考 [HTML ESCAPE CHARACTERS: COMPLETE LIST OF HTML ENTITIES](https://mateam.net/html-escape-characters/)
+
+```
+self.assertIn("Forbidden.\nYou don&#39;t have the permission to delete this item.", data)
+```
+
+![](.assets_img/README/unittest_html_bug.png)
+
 ## 参考
 
 - [Quickstart Flask Documentation (2.3.x)](https://flask.palletsprojects.com/en/2.3.x/quickstart/)
@@ -150,3 +170,4 @@ lim@lmxUbuntu:/etc/nginx$ curl localhost:8080
 - [How TO - Responsive Form](https://www.w3schools.com/howto/howto_css_responsive_form.asp)
 - [sqlalchemy filter multiple columns](https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns)
 - [Copy text string on click](https://stackoverflow.com/questions/45071353/copy-text-string-on-click)
+- [HTML ESCAPE CHARACTERS: COMPLETE LIST OF HTML ENTITIES](https://mateam.net/html-escape-characters/)

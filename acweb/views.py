@@ -86,6 +86,13 @@ def edit(cloud_file_id):
 @app.route('/cloud_file/delete/<int:cloud_file_id>', methods=['GET', 'POST'])
 @login_required
 def delete(cloud_file_id):
+    cloud_file = CloudFile.query.get_or_404(cloud_file_id)
+
+    # 身份验证
+    if current_user.id != cloud_file.user_id:
+        flash('Forbidden.\nYou don\'t have the permission to delete this item.')
+        abort(403)
+
     if CloudFile.delete_uncommit(cloud_file_id):
         flash('Item deleted.')
     else:
