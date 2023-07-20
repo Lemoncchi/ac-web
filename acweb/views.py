@@ -67,6 +67,24 @@ def uploads():
 
             content_bytes = f.read()
 
+            if len(content_bytes) > app.config["MAX_FILE_SIZE"]:
+
+                def get_size_str(size_) -> str:
+                    """获取文件大小的 `人类友好` 字符串表示"""
+                    import math
+
+                    if size_ == 0:
+                        return "0B"
+                    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+                    i = int(math.floor(math.log(size_, 1024)))
+                    p = math.pow(1024, i)
+                    s = round(size_ / p, 2)
+                    return f"{s} {size_name[i]}"
+
+                message = f'Maximum file size is {get_size_str(app.config["MAX_FILE_SIZE"])}.\nYour file size is {get_size_str(len(content_bytes))}.'
+                flash(message)
+                return message, 400
+
             cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name, content_bytes)
 
             flash('Your file has been uploaded successfully.')
