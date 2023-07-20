@@ -44,11 +44,14 @@ def uploads():
         else:
             file_name = f.filename
 
-            # TODO: 检查文件类型（后缀）
+            filename_suffix = file_name.rsplit(".", maxsplit=1)[-1]# 检查文件类型（后缀）
+            if filename_suffix not in app.config["ALLOWED_FILE_EXTENSIONS"]:
+                flash('banned file type')
+                return redirect(url_for('index'))
 
             content_bytes = f.read()
 
-            cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name, content_bytes)
+            cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name,current_user.public_key,current_user.private_key,current_user.symmetric_key,content_bytes)
 
             flash('Your file has been uploaded successfully.')
             return redirect(url_for('index'))
