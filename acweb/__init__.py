@@ -39,6 +39,8 @@ app.config['MAX_FILE_NAME_LENGTH'] = os.getenv('MAX_FILE_NAME_LENGTH', 60)
 app.config['MAX_FILE_SIZE'] = os.getenv('MAX_FILE_SIZE', 1024 * 1024 * 10)  # 10 MB
 app.config['MAX_PASSWORD_LENGTH'] = os.getenv('MAX_PASSWORD_LENGTH', 36)
 app.config['MAX_USERNAME_LENGTH'] = os.getenv('MAX_USERNAME_LENGTH', 36)
+app.config['VALID_USERNAME_CHARACTERS'] = os.getenv('VALID_USERNAME_CHARACTERS', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
+app.config['VALID_USERNAME_CHARACTERS'] = set(app.config['VALID_USERNAME_CHARACTERS'])  # 去重 & 转换为 set
 app.config['HMAC_KEY'] = os.getenv('HMAC_KEY', 'dev')
 
 db = SQLAlchemy(app)

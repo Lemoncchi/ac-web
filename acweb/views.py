@@ -11,23 +11,6 @@ from acweb.models import CloudFile, SharedFileInfo, User
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == 'POST':
-        if not current_user.is_authenticated:
-            return redirect(url_for('index'))
-
-        file_name = request.form['file_name']
-        year = request.form['year']
-
-        if not file_name or not year or len(year) != 4 or len(file_name) > 60:
-            flash('Invalid input.')
-            return redirect(url_for('index'))
-
-        cloud_file = CloudFile(file_name=file_name, year=year)
-        db.session.add(cloud_file)
-        db.session.commit()
-        flash('Item created.')
-        return redirect(url_for('index'))
-
     if current_user.is_authenticated:
         ueser_cloud_files = CloudFile.query.filter_by(user_id=current_user.id).order_by(CloudFile.timestamp.desc()).all()
         return render_template('index.html', user_cloud_files=ueser_cloud_files)
@@ -251,7 +234,14 @@ def register():
             flash('Password too long.')
             return redirect(url_for('register'))
 
-        # TODO: 密码强度校验
+        # 密码强度校验
+        psw_check_result = User.password_check(password)
+        
+        if not psw_check_result['password_ok']:
+            for message, invalid in psw_check_result.items():
+                if invalid and message != 'password_ok':
+                    flash(message)
+            return redirect(url_for('register'))
 
         user = User(username=username)
         user.set_password(password)
