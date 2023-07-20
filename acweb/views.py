@@ -44,8 +44,15 @@ def uploads():
         if f is None:
             flash('No file part')
             return redirect(url_for('index'))
+        elif f.filename is None or '':
+            flash('No selected file')
+            return redirect(url_for('index'))
         else:
             file_name = f.filename
+
+            if len(file_name) > app.config['MAX_FILE_NAME_LENGTH']:
+                flash(f'Maximum file name length is {app.config["MAX_FILE_NAME_LENGTH"]}.')
+                return redirect(url_for('index'))
 
             # TODO: 检查文件类型（后缀）
 
@@ -68,14 +75,12 @@ def edit(cloud_file_id):
 
     if request.method == 'POST':
         file_name = request.form['file_name']
-        year = request.form['year']
 
-        if not file_name or not year or len(year) != 4 or len(file_name) > 60:
-            flash('Invalid input.')
+        if not file_name or len(file_name) > app.config['MAX_FILE_NAME_LENGTH']:
+            flash(f'Maximum file name length is {app.config["MAX_FILE_NAME_LENGTH"]}.')
             return redirect(url_for('edit', cloud_file_id=cloud_file_id))
 
         cloud_file.file_name = file_name
-        cloud_file.year = year
         db.session.commit()
         flash('Item updated.')
         return redirect(url_for('index'))

@@ -41,6 +41,7 @@ app.config["ALLOWED_FILE_EXTENSIONS"] = os.getenv(
         "pdf",
     ],
 )
+app.config['MAX_FILE_NAME_LENGTH'] = os.getenv('MAX_FILE_NAME_LENGTH', 60)
 app.config['MAX_PASSWORD_LENGTH'] = os.getenv('MAX_PASSWORD_LENGTH', 36)
 app.config['MAX_USERNAME_LENGTH'] = os.getenv('MAX_USERNAME_LENGTH', 36)
 app.config['HMAC_KEY'] = os.getenv('HMAC_KEY', 'dev')
