@@ -286,6 +286,13 @@ def share(cloud_file_id):
             flash('In "Maximum download times", You both select the option and input the "Customed Input!"\nInvalid!')
             return redirect(url_for('share', cloud_file_id=cloud_file_id))
 
+        if not expired_in and not customed_expired_in:
+            flash('Please select the "Expiration Date" option or input the "Customed Input!"')
+            return redirect(url_for('share', cloud_file_id=cloud_file_id))
+        if not allowed_download_times and not customed_allowed_download_times:
+            flash('Please select the "Maximum download times" option or input the "Customed Input!"')
+            return redirect(url_for('share', cloud_file_id=cloud_file_id))
+
         expired_in_int = int(expired_in or customed_expired_in)
 
         allowed_download_times_int = int(

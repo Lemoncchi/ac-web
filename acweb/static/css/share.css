@@ -17,6 +17,17 @@ label {
 }
 
 /* Style the submit button */
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(248, 255, 233);
+}
+
+.cloud_loading {
+    display: block;
+    margin: 0px auto;
+    height: 100px;
+}
+
 input[type=submit] {
     background-color: #04AA6D;
     color: white;
@@ -40,7 +51,7 @@ input[type=submit] {
 /* Style the container */
 .container {
     border-radius: 5px;
-    background-color: #e3f4f7;
+    background-color: white;
     padding: 20px;
 }
 
