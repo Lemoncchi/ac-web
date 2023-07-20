@@ -154,39 +154,28 @@ class AcWebTestCase(unittest.TestCase):
         self.assertIn('fa-edit', data)
         self.assertIn('fa-download', data)
         self.assertIn('fa-share', data)
-    #     self.assertIn('<form method="post">', data)
+        self.assertIn('method="post"', data)
 
-    #     response = self.client.post('/login', data=dict(
-    #         username='test',
-    #         password='456'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Login success.', data)
-    #     self.assertIn('Invalid username or password.', data)
+        # 不存在用户登录测试
+        testuser1 = TestUser(username='testuser1', password='d39fGHD9da')
+        response = testuser1.login(self.client)
+        data = response.get_data(as_text=True)
+        self.assertNotIn('Login success.', data)
+        self.assertIn('Invalid username or password.', data)
 
-    #     response = self.client.post('/login', data=dict(
-    #         username='wrong',
-    #         password='123'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Login success.', data)
-    #     self.assertIn('Invalid username or password.', data)
+        # 不存在用户登录测试
+        testuser2 = TestUser(username='testuser2', password='fa9Ddfda2F')
+        response = testuser2.login(self.client)
+        data = response.get_data(as_text=True)
+        self.assertNotIn('Login success.', data)
+        self.assertIn('Invalid username or password.', data)
 
-    #     response = self.client.post('/login', data=dict(
-    #         username='',
-    #         password='123'
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Login success.', data)
-    #     self.assertIn('Invalid input.', data)
-
-    #     response = self.client.post('/login', data=dict(
-    #         username='test',
-    #         password=''
-    #     ), follow_redirects=True)
-    #     data = response.get_data(as_text=True)
-    #     self.assertNotIn('Login success.', data)
-    #     self.assertIn('Invalid input.', data)
+        # 空密码登录测试
+        testuser3 = TestUser(username='testuser3', password='')
+        response = testuser3.login(self.client)
+        data = response.get_data(as_text=True)
+        self.assertNotIn('Login success.', data)
+        self.assertIn('Invalid input.', data)
 
     @unittest.skipIf(debug_skip, "Speed up debug")
     def test_logout(self):
