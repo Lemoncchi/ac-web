@@ -206,7 +206,7 @@ class CloudFile(db.Model):
         # 对文件进行解密
         private_key = None # TODO: 需要引入私钥配置文件
 
-        self.decrypted_content_bytes = self.decrypt(private_key,encrypted_content_bytes)
+        self.decrypted_content_bytes = encrypted_content_bytes #TODO:需要引入私钥，暂时以原文件代替 self.decrypt(private_key,encrypted_content_bytes)
 
         return self.decrypted_content_bytes
 
