@@ -502,7 +502,7 @@ def shared_file_download():
     shared_file_info.used_download_count += 1
     db.session.commit()
 
-    decrypted_content_bytes = cloud_file.decrypt()
+    decrypted_content_bytes = cloud_file.file_decrypt()
 
     return send_file(
         path_or_file=BytesIO(decrypted_content_bytes),
