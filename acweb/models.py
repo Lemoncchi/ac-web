@@ -334,6 +334,6 @@ class SharedFileInfo(db.Model):
 #存储每个用户对每一文件密钥的数据库
 class encrypt_symmetricKey(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
-    file_name = db.Column(db.String(app.config['MAX_FILE_NAME_LENGTH']),db.ForeignKey('Cloud.file_name'))# 外键
+    user_id = db.Column(db.Integer ) 
+    file_name = db.Column(db.String(app.config['MAX_FILE_NAME_LENGTH']))
     encrypt_SymmetricKey = db.Column(db.String(2048))
