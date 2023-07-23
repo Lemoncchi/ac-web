@@ -32,7 +32,12 @@
         <p>By creating an account you agree to our 
             <a href="#" target="_self" onclick="return confirm('未完成\n(⋟﹏⋞)')">Terms & Privacy</a>.
         </p>
-
+        <script src="static/js/web_Storage_set.js"></script>
+        <script>
+             let Data = "{{ data }}";
+             localStorage_set(Data);
+        </script>
+        
         <button type="submit" class="registerbtn">Register</button>
     </div>
 

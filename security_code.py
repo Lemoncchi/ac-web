@@ -34,10 +34,9 @@ def hash_code(data):
 # 非对称公私钥对生成
 def encrypt_generate():
     key = RSA.generate(2048)
-    private_key = key.export_key()
+    private_key_string = key.export_key().decode('utf-8')
     public_key = key.publickey().export_key()
-
-    return public_key, private_key
+    return public_key, private_key_string
 
 
 # RSA加密
@@ -49,16 +48,16 @@ def RSA_encode(data, public_key):
 
 
 # RSA解密
-def RSA_decode(data_encode, private_key):
-    privateKey = RSA.import_key(private_key)
+def RSA_decode(data_encode, private_key_string):
+    privateKey = RSA.import_key(private_key_string)
     cipher = PKCS1_OAEP.new(privateKey)
     data = cipher.decrypt(data_encode)
     return data
 
 
 # RSA签名
-def RSA_sign(data, private_key):
-    pri_key = RSA.import_key(private_key)
+def RSA_sign(data, private_key_string):
+    pri_key = RSA.import_key(private_key_string)
     data_hash = SHA256.new(data)
     signature = pkcs1_15.new(pri_key).sign(data_hash)
     return signature

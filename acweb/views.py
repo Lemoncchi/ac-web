@@ -2,7 +2,7 @@ import os
 from io import BytesIO
 
 from flask import (abort, flash, redirect, render_template, request, send_file,
-                   url_for)
+                   url_for,jsonify)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from acweb import app, db
@@ -268,13 +268,21 @@ def register():
 
         user = User(username=username)
         user.set_password(password)
+        #私钥传至web storage
+        private_key = user.generate_public_private_key()
+        data = {username: private_key}
+        
         db.session.add(user)
         db.session.commit()
 
-        flash('Registration success.')
-        return redirect(url_for('login'))
+
+        flash('Registration success.Please login your account.')
+        return render_template('register.html',data = data)
 
     return render_template('register.html')
+
+
+
 
 
 @app.route('/logout')

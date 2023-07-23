@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     # 为用户生成一个随机公私钥对
     def generate_public_private_key(self):
         self.public_key, private_key = security_code.encrypt_generate()
-        private_key = None # TODO: 私钥存储在配置文件
+        return private_key #  私钥传出，存储在配置文件
     
 
     def set_password(self, password):
