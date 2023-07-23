@@ -101,7 +101,7 @@ class CloudFile(db.Model):
     file_save_name = db.Column(db.String(128))
     file_hash = db.Column(db.String(128))
     file_size = db.Column(db.Integer)
-    encrypted_symmetric_key = db.Column(db.String(128)) #每个文件生成对称密钥
+    
 
 
     def __repr__(self):
@@ -331,5 +331,9 @@ class SharedFileInfo(db.Model):
             share_page_access_token_hash=share_page_access_token_hash
         ).first()
 
-
-    
+#存储每个用户对每一文件密钥的数据库
+class encrypt_symmetricKey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
+    file_name = db.Column(db.String(app.config['MAX_FILE_NAME_LENGTH']),db.ForeignKey('Cloud.file_name'))# 外键
+    encrypt_SymmetricKey = db.Column(db.String(2048))
