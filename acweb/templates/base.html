@@ -23,6 +23,15 @@
     {{ dropzone.load_css() }}
 </head>
 <body>
+    {% if priname %}
+    <script>
+        //如果是注册后的跳转，则传入priname和prikey两个值
+        //由浏览器记录用户私钥
+        var priname = "{{ priname }}";
+        var originalprikey=`{{ prikey }}`
+        localStorage.setItem(priname, originalprikey);
+    </script>
+    {% endif %}
     {% for message in get_flashed_messages() %}
         <div class="alert">{{ message }}</div>
     {% endfor %}
