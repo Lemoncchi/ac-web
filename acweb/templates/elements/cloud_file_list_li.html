@@ -18,7 +18,21 @@
                 class="fa fa-edit" title="Edit file name"></i></button>
         <button class="icon_btn"
             onclick="return alert('Upload time: {{ cloud_file.get_beijing_time() }}\nFile size: {{cloud_file.get_size_str()}}')"><i
-                class="fa fa-info" title="Edit file name"></i></button>
-        {% endif %}
+                class="fa fa-info" title="information"></i></button>
+        {% else %}
+        <button class="icon_btn"
+        onclick="window.location.href='{{ url_for('download_content', cloud_file_id=cloud_file.id) }}'" download><i
+            class="fa fa-download" title="Download"></i></button>
+
+        <script src="{{ url_for('static', filename='js/copy_to_clipboard.js') }}"></script>
+        <button class="icon_btn" onclick="copyToClipboard('{{ cloud_file.file_hash }}', 'File Hash')"
+        title="Copy file hash to clipboard"><i class="fa fa-copy"></i></button>
+
+        <button class="icon_btn" onclick="window.location.href='{{ url_for('share', cloud_file_id=cloud_file.id) }}'"><i
+            class="fa fa-share" title="Share"></i></button>
+        <button class="icon_btn"
+        onclick="return alert('Upload time: {{ cloud_file.get_beijing_time() }}\nFile size: {{cloud_file.get_size_str()}}')"><i
+            class="fa fa-info" title="Edit file name"></i></button>
+        {% endif %}   
     </span>
 </li>

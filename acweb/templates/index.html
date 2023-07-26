@@ -23,41 +23,12 @@
     {% endfor %}
 </ul>
 {% else %}
-
-
-<form action="/login" method="post">
-    <div class="container">
-        <h1>Welcome to 中传放心传!</h1>
-
-        <hr class="introduction">
-            <p class="introduction">AC-Web is a cloud storage service that allows users to upload and download files.</p>
-
-        <p>Don't have an account? <a href="/register">Register</a>.
-        </p>
-        <hr class="intro_login">
-
-
-        <div class="container">
-            <h2>Login</h2>
-            
-            <label for="uname"><b>Username</b></label>
-            <input type="text" placeholder="Enter Username" name="username" required>
-
-            <label for="psw"><b>Password</b></label>
-            <input type="password" placeholder="Enter Password" name="password" required>
-
-            <button type="submit">Login</button>
-            <label>
-                <input type="checkbox" checked="checked" name="remember"> Remember me
-            </label>
-        </div>
-
-        <div class="container" style="background-color:#f1f1f1">
-            <button type="button" class="cancelsurround_btn" onclick="window.location.href='/'">Cancel</button>
-            <span class="psw">Forgot <a href="#" onclick="return confirm('未完成\n(⋟﹏⋞)')">password?</a></span>
-        </div>
-    </div>
-</form>
+<p>{{ user_cloud_files|length }} Files</p>
+<ul class="cloud_file-list">
+    {% for cloud_file in user_cloud_files %}
+        {% include 'elements/cloud_file_list_li.html' %}
+    {% endfor %}
+</ul>
 
 {% endif %}
 <img alt="Cloud loading" class="cloud_loading" src="{{ url_for('static', filename='images/cloud_load.gif') }}" file_name="中传放心传">

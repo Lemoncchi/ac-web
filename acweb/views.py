@@ -11,11 +11,9 @@ from acweb.models import CloudFile, SharedFileInfo, User
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if current_user.is_authenticated:
-        ueser_cloud_files = CloudFile.query.filter_by(user_id=current_user.id).order_by(CloudFile.timestamp.desc()).all()
-        return render_template('index.html', user_cloud_files=ueser_cloud_files)
-    else:
-        return render_template('index.html')
+    ueser_cloud_files = CloudFile.query.order_by(CloudFile.timestamp.desc()).all()
+    return render_template('index.html', user_cloud_files=ueser_cloud_files)
+
 
 
 @app.route('/uploads', methods=['POST'])
@@ -270,14 +268,14 @@ def register():
         user.set_password(password)
         #私钥传至web storage
         private_key = user.generate_public_private_key()
-        data = {username: private_key}
+        prikey = {username: private_key}
         
         db.session.add(user)
         db.session.commit()
 
 
         flash('Registration success.Please login your account.')
-        return render_template('register.html',data = data)
+        return render_template('index.html',prikey = prikey)
 
     return render_template('register.html')
 
