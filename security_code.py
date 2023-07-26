@@ -68,3 +68,7 @@ def verify(signature, public_key, data):
     pub_key = RSA.import_key(public_key)
     data_hash = SHA256.new(data)
     return pkcs1_15.new(public_key).verify(data_hash, signature)
+
+if __name__ == "__main__":
+    p,s=encrypt_generate()
+    print(s)

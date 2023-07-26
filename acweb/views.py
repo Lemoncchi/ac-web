@@ -268,14 +268,13 @@ def register():
         user.set_password(password)
         #私钥传至web storage
         private_key = user.generate_public_private_key()
-        prikey = {username: private_key}
         
         db.session.add(user)
         db.session.commit()
 
 
         flash('Registration success.Please login your account.')
-        return render_template('index.html',prikey = prikey)
+        return render_template('index.html',priname = username,prikey=private_key)
 
     return render_template('register.html')
 
