@@ -4,7 +4,7 @@
 {% if current_user.is_authenticated %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" type="text/css">
 {% else %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}" type="text/css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" type="text/css">
 {% endif %}
 {% endblock %}
 

@@ -274,7 +274,7 @@ def register():
 
 
         flash('Registration success.Please login your account.')
-        return render_template('index.html',priname = username,prikey=private_key)
+        return render_template('register.html',priname = username,prikey=private_key)
 
     return render_template('register.html')
 

@@ -50,11 +50,9 @@ dropzone = Dropzone(app)
 def load_user(user_id):
     from acweb.models import User
     # user = User.query.get(int(user_id))
-    print("user_id is")
-    print(user_id)
     user = db.session.get(User, int(user_id))
-    if user is None:
-        abort(404)
+    #if user is None:
+    #    abort(404)
     return user
 
 
