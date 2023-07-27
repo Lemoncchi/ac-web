@@ -9,11 +9,10 @@ from acweb import app, db
 from acweb.models import CloudFile, SharedFileInfo, User
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
-    ueser_cloud_files = CloudFile.query.order_by(CloudFile.timestamp.desc()).all()
-    return render_template('index.html', user_cloud_files=ueser_cloud_files)
-
+    user_cloud_files = CloudFile.query.order_by(CloudFile.timestamp.desc()).all()
+    return render_template('index.html', user_cloud_files=user_cloud_files)
 
 
 @app.route('/uploads', methods=['POST'])
@@ -66,7 +65,7 @@ def uploads():
                 flash(message)
                 return message, 400
 
-            cloud_file = CloudFile.save_encrypt_commit(current_user.id,file_name, content_bytes)
+            CloudFile.upload2cloud(current_user.id,file_name, content_bytes)
 
             flash('Your file has been uploaded successfully.')
             return redirect(url_for('index'))
@@ -105,9 +104,9 @@ def delete(cloud_file_id):
     cloud_file = CloudFile.query.get_or_404(cloud_file_id)
 
     # 身份验证
-    if current_user.id != cloud_file.user_id:
-        flash('Forbidden.\nYou don\'t have the permission to delete this item.')
-        abort(403)
+    #if current_user.id != cloud_file.user_id:
+    #    flash('Forbidden.\nYou don\'t have the permission to delete this item.')
+    #    abort(403)
 
     if CloudFile.delete_uncommit(cloud_file_id):
         flash('Item deleted.')
@@ -268,6 +267,7 @@ def register():
         user.set_password(password)
         #私钥传至web storage
         private_key = user.generate_public_private_key()
+        print(user.public_key)
         
         db.session.add(user)
         db.session.commit()
