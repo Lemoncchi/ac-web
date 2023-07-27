@@ -30,11 +30,21 @@ def forge():
         upload_file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
         if os.path.isfile(upload_file_path):
             os.remove(upload_file_path)
+    # 删除 sessionkey 文件夹中的所有文件
+    for root, dirs, files in os.walk(app.config['SESSIONKEY_FOLDER'], topdown=False):
+        for file in files:
+            file_path = os.path.join(root, file)
+            os.remove(file_path)
+        for dir in dirs:
+            dir_path = os.path.join(root, dir)
+            os.rmdir(dir_path)
 
     # 新建默认用户
     username = 'CUCer'
     user = User(username=username)
     user.set_password('7q:N37mayrMgiH!')
+    private_key = user.generate_public_private_key()
+    click.echo(private_key)
     db.session.add(user)
     db.session.commit()
 
@@ -46,9 +56,7 @@ def forge():
             file_path = os.path.join(root,file_name)
             with open(file_path, 'rb') as f:
                 file_content = f.read()
-                cloud_file = CloudFile.save_encrypt_commit(user.id, file_name, file_content)
-
-
+                CloudFile.upload2cloud(user.id, file_name, file_content)
 
     click.echo('Done.')
 

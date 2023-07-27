@@ -20,9 +20,10 @@ class User(db.Model, UserMixin):
     # 为用户生成一个随机公私钥对
     def generate_public_private_key(self):
         self.public_key, private_key = security_code.encrypt_generate()
+        seesionkey_path = os.path.join(app.config['SESSIONKEY_FOLDER'],self.username)
+        os.makedirs(seesionkey_path)
         return private_key #  私钥传出，存储在配置文件
     
-
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method='pbkdf2:sha256:600000', salt_length=16)  # 禁止使用明文存储用户口令
         # pbkdf2:sha256:600000 ——> 600000 次 sha256 迭代
@@ -36,7 +37,7 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
     
     def __repr__(self):
-        return f"<User id: {self.id}, username: {self.username}, password_hash: {self.password_hash}>"
+        return f"<User id: {self.id}, username: {self.username}, password_hash: {self.password_hash},public_key:{self.public_key}>"
     
     @staticmethod
     def password_check(password):
@@ -98,12 +99,10 @@ class CloudFile(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 外键
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)  # 默认设置为当前 UTC 时间
     file_name = db.Column(db.String(app.config['MAX_FILE_NAME_LENGTH']))
-    file_save_name = db.Column(db.String(128))
-    file_hash = db.Column(db.String(128))
+    file_save_name = db.Column(db.String(256))
+    file_hash = db.Column(db.String(256))
     file_size = db.Column(db.Integer)
     
-
-
     def __repr__(self):
         return f'<CloudFile id: {self.id}, user_id: {self.user_id}, timestamp: {self.timestamp}, file_name: {self.file_name}, file_save_name: {self.file_save_name}, file_hash: {self.file_hash}, file_size: {self.file_size}>'
 
@@ -118,61 +117,37 @@ class CloudFile(db.Model):
             'file_size': self.file_size,
         }
     
-    def generate_save_symmetric_key(self,public_key) -> None:
-        """生成对称密钥 & 保存其加密后的密文"""
-        symmetric_key = security_code.symmetric_generate()  #  生成对称密钥
-        self.encrypted_symmetric_key = security_code.RSA_encode(symmetric_key,public_key).hex()
-        db.session.commit()
-
-    def encrypt(self, private_key,content_: bytes) -> bytes:
-        """使用文件对称密钥加密 content_"""
-        symmetric_key = security_code.RSA_decode(bytes.fromhex(self.encrypted_symmetric_key),private_key)
-
-        encrypted_content = security_code.symmetric_encode(content_,symmetric_key)  #  使用用户对称密钥 symmetric_key 加密 content_
-        return encrypted_content
-    
-    def decrypt(self, private_key,content_: bytes) -> bytes:
-        """使用用户对称密钥解密 content_"""
-        symmetric_key = security_code.RSA_decode(bytes.fromhex(self.encrypted_symmetric_key),private_key)
-        decrypted_content = security_code.symmetric_decode(content_,symmetric_key)#  使用用户对称密钥 symmetric_key 解密 content_
-        
-        return decrypted_content
-
-    
     @staticmethod
-    def save_encrypt_commit(user_id, file_name_, content_bytes_:bytes) -> "CloudFile":
-        """保存文件元数据到数据库 & 保存加密后的文件到本地
-
-        return: CloudFile
-        """
+    def upload2cloud(user_id,file_name_, content_bytes_:bytes):# -> "CloudFile":
+        """上传文件到云端，并加密存储；会话密钥经所有公钥加密后保存"""
         file_size_ = len(content_bytes_)
-
-        import hashlib
-
         file_hash_ = hashlib.sha256(content_bytes_).hexdigest()
-        # 对文件进行安全 hash
+        file_name_hash=hashlib.sha256(file_name_.encode()).hexdigest()  # 加密文件名用文件名的哈希，以防文件名的信息泄露
 
-        file_save_name = file_hash_ # 保存文件时的文件名
+        symmetric_key = security_code.symmetric_generate()
+        encrypted_content = security_code.symmetric_encode(content_bytes_,symmetric_key)
 
-        user = db.session.get(User, user_id)
-
-        assert user is not None, "Error! user_id must be valid"
-
-        private_key = None # TODO: 需要引入私钥配置文件
-
-        #encrypted_content_bytes = CloudFile.encrypt(CloudFile(),private_key,content_bytes_)  # 对文件进行加密
-
-        save_path = os.path.join(app.config['UPLOAD_FOLDER'], file_save_name)
-
-        cloud_file = CloudFile(user_id=user_id, file_name=file_name_, file_save_name=file_save_name, file_hash=file_hash_, file_size=file_size_)
+        cloud_file = CloudFile(user_id=user_id,file_name=file_name_,
+                               file_save_name=file_name_hash,file_hash=file_hash_,file_size=file_size_)
         db.session.add(cloud_file)
-        db.session.commit()
+
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'],file_name_hash)
 
         with open(save_path, 'wb') as f:  # 保存 文件 & 加密后的文件
-            f.write(content_bytes_)#encrypted_content_bytes)  #TODO: 这里由于没有加密，使用未加密文件代替加密文件
+            f.write(encrypted_content)
 
-        return cloud_file
-    
+        #对称密钥使用所有用户的公钥加密，保存到路径seesionkey/filename
+        users=User.query.all()
+        public_keys = [(user.username,user.public_key) for user in users]
+
+        for pk in public_keys:
+            sessionkey_path = os.path.join(app.config['SESSIONKEY_FOLDER'],pk[0],file_name_hash)
+            encrypted_session_key=security_code.RSA_encode(symmetric_key,pk[1])
+            with open(sessionkey_path, 'wb') as f:  # 保存加密后的会话密钥
+                f.write(encrypted_session_key)
+
+        db.session.commit()
+        
 
     @staticmethod
     def delete_uncommit(cloud_file_id_:int):
@@ -186,29 +161,34 @@ class CloudFile(db.Model):
         if os.path.exists(save_path):
             os.remove(save_path)
         
+        #users=User.query.all()
+        #public_keys = [(user.id,user.public_key) for user in users]
+        #for pk in public_keys:
+        #    sessionkey_path = os.path.join(app.config['SESSIONKEY_FOLDER'],pk[0],cloud_file.file_save_name)
+        #    if os.path.exists(sessionkey_path):
+        #        os.remove(sessionkey_path)
+#
         db.session.delete(cloud_file)
         db.session.commit()
 
         return True
 
 
-    def file_decrypt(self) -> bytes:
+    def file_decrypt(self,decrypted_session_key) -> bytes:
         """对文件内容进行解密"""
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], self.file_save_name)
 
         with open(file_path, "rb") as f:
             encrypted_content_bytes = f.read()
-
-        user = db.session.get(User, self.user_id)
-
-        assert user is not None, "Error! user_id must be valid"
+            
+        #user = db.session.get(User, self.user_id)
+        #assert user is not None, "Error! user_id must be valid"
 
         # 对文件进行解密
-        private_key = None # TODO: 需要引入私钥配置文件
+        session_key = decrypted_session_key
+        decrypted_content_bytes = security_code.symmetric_decode(encrypted_content_bytes,session_key)
 
-        self.decrypted_content_bytes = encrypted_content_bytes #TODO:需要引入私钥，暂时以原文件代替 self.decrypt(private_key,encrypted_content_bytes)
-
-        return self.decrypted_content_bytes
+        return decrypted_content_bytes
 
 
     def get_size_str(self) -> str:
@@ -331,9 +311,3 @@ class SharedFileInfo(db.Model):
             share_page_access_token_hash=share_page_access_token_hash
         ).first()
 
-#存储每个用户对每一文件密钥的数据库
-class encrypt_symmetricKey(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer ) 
-    file_name = db.Column(db.String(app.config['MAX_FILE_NAME_LENGTH']))
-    encrypt_SymmetricKey = db.Column(db.String(2048))
