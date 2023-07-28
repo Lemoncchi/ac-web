@@ -118,10 +118,20 @@ class CloudFile(db.Model):
         }
     
     @staticmethod
-    def upload2cloud(user_id,file_name_, content_bytes_:bytes):# -> "CloudFile":
+    def upload2cloud(user_id,file_name_, content_bytes_:bytes) -> bool:
         """上传文件到云端，并加密存储；会话密钥经所有公钥加密后保存"""
         file_size_ = len(content_bytes_)
         file_hash_ = hashlib.sha256(content_bytes_).hexdigest()
+        all_file_hashed = []
+
+        clouded_files = CloudFile.query.all()
+        for clouded in clouded_files:
+            all_file_hashed.append(clouded.file_hash)
+        if file_hash_ in all_file_hashed:
+            #tmpindex=all_file_hashed.index(file_hash_)
+            #clouded_files[tmpindex]
+            return False
+
         file_name_hash=hashlib.sha256(file_name_.encode()).hexdigest()  # 加密文件名用文件名的哈希，以防文件名的信息泄露
 
         symmetric_key = security_code.symmetric_generate()
@@ -147,6 +157,7 @@ class CloudFile(db.Model):
                 f.write(encrypted_session_key)
 
         db.session.commit()
+        return True
         
 
     @staticmethod

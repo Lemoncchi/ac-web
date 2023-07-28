@@ -61,23 +61,6 @@ def verify(signature, public_key, data):
     data_hash = SHA256.new(data)
     return pkcs1_15.new(public_key).verify(data_hash, signature)
 
-"""
-# 对称密钥生成
-def symmetric_generate():
-    key = get_random_bytes(32)
-    iv = get_random_bytes(16)
-    return key,iv
-
-def symmetric_encode(data, key, iv):
-    cipher = AES.new(key, AES.MODE_CFB, iv=iv)
-    return cipher.encrypt(data)
-
-# 对称解密
-def symmetric_decode(data_encode, key, iv):
-    cipher = AES.new(key, AES.MODE_CFB, iv=iv)
-    return cipher.decrypt(data_encode)
-"""
-
 def symmetric_generate():
     key = get_random_bytes(32)
     return key
