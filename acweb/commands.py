@@ -44,7 +44,6 @@ def forge():
     user = User(username=username)
     user.set_password('7q:N37mayrMgiH!')
     private_key = user.generate_public_private_key()
-    click.echo(private_key)
     db.session.add(user)
     db.session.commit()
 

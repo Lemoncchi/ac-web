@@ -1,0 +1,13 @@
+<li>
+    <img src="/static/images/red.svg" alt="Icon" class="icon-img" style="vertical-align: middle; margin-right: 5px;">
+        {{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
+    <span class="float-right">
+            
+    <script src="{{ url_for('static', filename='js/copy_to_clipboard.js') }}"></script>
+    <button class="icon_btn" onclick="copyToClipboard('{{ cloud_file.file_hash }}', 'File Hash')"
+            title="Copy file hash to clipboard"><i class="fa fa-copy"></i></button>
+    <button class="icon_btn"
+            onclick="return alert('Upload time: {{ cloud_file.get_beijing_time() }}\nFile size: {{cloud_file.get_size_str()}}')"><i
+                class="fa fa-info" title="information"></i></button>
+    </span>
+</li>

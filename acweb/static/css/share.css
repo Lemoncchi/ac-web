@@ -121,3 +121,15 @@ button.icon_btn:hover {
     /* background-color: rgb(215, 224, 252); */
     background-color: rgb(237, 242, 255);
 }
+
+img.icon-img {
+    background-color: none;
+    border: none;
+    color: white;
+    font-size: 12px;
+    padding: 3px 5px;
+    width: 20px;
+    height: 20px;
+    /* padding: 12px 16px;
+    font-size: 16px; */
+}

@@ -4,25 +4,17 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import pkcs1_15
+import pickle
 
+def tuple_to_bytes(data):
+    # 使用pickle将元组转化为字节流
+    bytes_data = pickle.dumps(data)
+    return bytes_data
 
-# 对称密钥生成
-def symmetric_generate():
-    key = get_random_bytes(32)
-    return key
-
-
-# 对称加密
-def symmetric_encode(data, key):
-    cipher = AES.new(key,AES.MODE_CFB)
-    return cipher.encrypt(data)
-
-
-# 对称解密
-def symmetric_decode(data_encode, key):
-    cipher = AES.new(key,AES.MODE_CFB)
-    return cipher.decrypt(data_encode)
-
+def bytes_to_tuple(bytes_data):
+    # 使用pickle将字节流转化为原始的元组对象
+    tuple_data = pickle.loads(bytes_data)
+    return tuple_data
 
 # 哈希
 def hash_code(data):
@@ -69,6 +61,74 @@ def verify(signature, public_key, data):
     data_hash = SHA256.new(data)
     return pkcs1_15.new(public_key).verify(data_hash, signature)
 
+"""
+# 对称密钥生成
+def symmetric_generate():
+    key = get_random_bytes(32)
+    iv = get_random_bytes(16)
+    return key,iv
+
+def symmetric_encode(data, key, iv):
+    cipher = AES.new(key, AES.MODE_CFB, iv=iv)
+    return cipher.encrypt(data)
+
+# 对称解密
+def symmetric_decode(data_encode, key, iv):
+    cipher = AES.new(key, AES.MODE_CFB, iv=iv)
+    return cipher.decrypt(data_encode)
+"""
+
+def symmetric_generate():
+    key = get_random_bytes(32)
+    return key
+
+
+def symmetric_encode(data, key):
+    cipher = AES.new(key, AES.MODE_EAX)
+    ciphertext, tag = cipher.encrypt_and_digest(data)
+    return (ciphertext, cipher.nonce, tag)
+
+
+def symmetric_decode(ciphertext,key):
+    cipher = AES.new(key, AES.MODE_EAX, ciphertext[1])
+    data = cipher.decrypt_and_verify(ciphertext[0], ciphertext[2])
+    return data
+
 if __name__ == "__main__":
-    p,s=encrypt_generate()
-    print(s)
+    """
+    #RSA测试
+
+    public_key, private_key_string = encrypt_generate()
+
+    # 待加密的数据
+    original_data = b"Hello, World!"
+
+    # 加密数据
+    encrypted_data = RSA_encode(original_data, public_key)
+
+    # 解密数据
+    decrypted_data = RSA_decode(encrypted_data, private_key_string)
+
+    # 验证解密后的数据与原始数据匹配
+    if original_data == decrypted_data:
+        print("RSA加密解密功能验证成功！")
+    else:
+        print("RSA加密解密功能验证失败！")
+    """
+    #AES加密测试
+    symmetric_key = symmetric_generate()
+
+    # 待加密的数据
+    original_data = b"Hello, World!"
+
+    # 加密数据
+    ciphertext = symmetric_encode(original_data, symmetric_key)
+
+    # 解密数据
+    decrypted_data = symmetric_decode(ciphertext, symmetric_key)
+
+    # 验证解密后的数据与原始数据匹配
+    if original_data == decrypted_data:
+        print("AES加密解密功能验证成功！")
+    else:
+        print("AES加密解密功能验证失败！")

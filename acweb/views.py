@@ -7,12 +7,27 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from acweb import app, db
 from acweb.models import CloudFile, SharedFileInfo, User
+import security_code
 
 
 @app.route('/', methods=['GET'])
 def index():
     user_cloud_files = CloudFile.query.order_by(CloudFile.timestamp.desc()).all()
-    return render_template('index.html', user_cloud_files=user_cloud_files)
+    if current_user.is_authenticated==False:
+        """如果是匿名用户，所有文件都只能下载密文"""
+        return render_template('index.html', user_cloud_files=user_cloud_files)
+    else:
+        """如果是登录用户，则该用户注册之后上传的文件可以下载明文
+        注册之前上传的，由于上传时没有使用该用户的公钥加密会话密钥
+        无法解密并下载
+        """
+        accessfiles=[]
+        sessionkey_path = os.path.join(app.config['SESSIONKEY_FOLDER'],current_user.username)
+        for filename in os.listdir(sessionkey_path):
+            if os.path.isfile(os.path.join(sessionkey_path, filename)):
+                accessfiles.append(filename)
+        return render_template('index.html', user_cloud_files=user_cloud_files,accessfiles=accessfiles)
+
 
 
 @app.route('/uploads', methods=['POST'])
@@ -115,26 +130,33 @@ def delete(cloud_file_id):
     return redirect(url_for('index'))
 
 
-@app.route("/cloud_file/downloads/content/<int:cloud_file_id>", methods=["GET", "POST"])
-def download_content(cloud_file_id: int):
-    """仅供文件所有者下载文件内容，不提供分享文件下载"""
+@app.route("/cloud_file/downloads/decontent/<int:cloud_file_id>", methods=["POST"])
+def download_decontent(cloud_file_id: int):
     cloud_file = db.session.get(CloudFile, cloud_file_id)
     if cloud_file is None:
         abort(404)
 
-    if current_user.is_authenticated:
-        if current_user.id != cloud_file.user_id:
-            flash('Forbidden.')
-            abort(403)  # Forbidden
-    else:  # 未登录下载通过 `非分享下载` 下载文件内容
-        flash('Please login then download the file.')
-        return redirect(url_for('login'))
+    privatekey = request.form.get('privatekey')
+    sessionkey_path = os.path.join(app.config['SESSIONKEY_FOLDER'],current_user.username,cloud_file.file_save_name)
+    with open(sessionkey_path, 'rb') as f: 
+        encrypted_session_key=f.read()
+    decrypted_session_key=security_code.RSA_decode(encrypted_session_key,privatekey)
+    decryptfile=cloud_file.file_decrypt(decrypted_session_key)
+    return send_file(
+        path_or_file=BytesIO(decryptfile),
+        download_name=cloud_file.file_name,
+        as_attachment=True,
+    )
 
-    cloud_file.decrypt()
+@app.route("/cloud_file/downloads/encontent/<int:cloud_file_id>", methods=["GET"])
+def download_encontent(cloud_file_id: int):
+    cloud_file = db.session.get(CloudFile, cloud_file_id)
+    if cloud_file is None:
+        abort(404)
 
     return send_file(
-        path_or_file=BytesIO(cloud_file.decrypted_content_bytes),
-        download_name=cloud_file.file_name,
+        path_or_file=BytesIO(cloud_file.file_encrypt()),
+        download_name=cloud_file.file_name+".encrypt",
         as_attachment=True,
     )
 
@@ -267,7 +289,6 @@ def register():
         user.set_password(password)
         #私钥传至web storage
         private_key = user.generate_public_private_key()
-        print(user.public_key)
         
         db.session.add(user)
         db.session.commit()
@@ -298,9 +319,9 @@ def share(cloud_file_id):
         abort(404)
     
     # 身份验证
-    if current_user.id != cloud_file.user_id:
-        flash('Forbidden.')
-        abort(403)
+    #if current_user.id != cloud_file.user_id:
+    #    flash('Forbidden.')
+    #    abort(403)
 
     from datetime import datetime
     from sqlalchemy import and_, or_, not_
@@ -362,7 +383,7 @@ def share(cloud_file_id):
         # print(shared_file_info)
         return redirect(url_for('share_success', shared_file_info_id=shared_file_info.id))
         
-    return render_template('share.html', cloud_file=cloud_file)
+    return render_template('share.html', cloud_file=cloud_file,share=1)
 
 
 @app.route("/share/success/<int:shared_file_info_id>", methods=["GET", "POST"])
@@ -374,9 +395,9 @@ def share_success(shared_file_info_id):
 
     cloud_file = db.session.get(CloudFile, shared_file_info.cloud_file_id)
     # 身份验证
-    if current_user.id != cloud_file.user_id:
-        flash("Forbidden.")
-        abort(403)
+    #if current_user.id != cloud_file.user_id:
+    #    flash("Forbidden.")
+    #    abort(403)
 
     (
         share_code,
@@ -507,7 +528,7 @@ def shared_file_download():
     shared_file_info.used_download_count += 1
     db.session.commit()
 
-    decrypted_content_bytes = cloud_file.file_decrypt()
+    decrypted_content_bytes = cloud_file.file_encrypt()
 
     return send_file(
         path_or_file=BytesIO(decrypted_content_bytes),

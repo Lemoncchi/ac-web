@@ -1,13 +1,28 @@
-<li>{{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
-    <span class="float-right">
-        {% if current_user.is_authenticated %}
+<li>
+    {% if cloud_file.file_save_name in accessfiles %}
+        <img src="/static/images/green.svg" alt="Icon" class="icon-img" style="vertical-align: middle; margin-right: 5px;">
+        {{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
+        <span class="float-right">
+    {% else %}
+        <img src="/static/images/red.svg" alt="Icon" class="icon-img" style="vertical-align: middle; margin-right: 5px;">
+        {{ cloud_file.file_name }} <span class="file_size_str"> {{ cloud_file.get_size_str() }}</span>
+        <span class="float-right">
+    {% endif %}     
+    {% if current_user.is_authenticated %}
         <button class="icon_btn"
             onclick="if(confirm('Are you sure? \nIt will be permanently deleted!')){window.location.href='{{ url_for('delete', cloud_file_id=cloud_file.id) }}'}"
             title="Delete"><i class="fa fa-trash"></i></button>
+    {% if cloud_file.file_save_name in accessfiles %}
+    
+    <button class="icon_btng" onclick="downloadWithLocalStorage()" download>
+        <i class="fa fa-download" title="Download"></i>
+    </button>
+        
+    {% else %}
         <button class="icon_btn"
-            onclick="window.location.href='{{ url_for('download_content', cloud_file_id=cloud_file.id) }}'" download><i
-                class="fa fa-download" title="Download"></i></button>
-
+            onclick="window.location.href='{{ url_for('download_encontent', cloud_file_id=cloud_file.id) }}'" download><i
+            class="fa fa-download" title="Download"></i></button>
+    {% endif %}           
         <script src="{{ url_for('static', filename='js/copy_to_clipboard.js') }}"></script>
         <button class="icon_btn" onclick="copyToClipboard('{{ cloud_file.file_hash }}', 'File Hash')"
             title="Copy file hash to clipboard"><i class="fa fa-copy"></i></button>
@@ -21,7 +36,7 @@
                 class="fa fa-info" title="information"></i></button>
         {% else %}
         <button class="icon_btn"
-        onclick="window.location.href='{{ url_for('download_content', cloud_file_id=cloud_file.id) }}'" download><i
+        onclick="window.location.href='{{ url_for('download_encontent', cloud_file_id=cloud_file.id) }}'" download><i
             class="fa fa-download" title="Download"></i></button>
 
         <script src="{{ url_for('static', filename='js/copy_to_clipboard.js') }}"></script>
@@ -36,3 +51,29 @@
         {% endif %}   
     </span>
 </li>
+
+
+    
+<script>
+    function downloadWithLocalStorage() {
+        var localStorageData = localStorage.getItem('{{ current_user.username }}');
+
+        // 创建一个隐藏的表单元素
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('download_decontent', cloud_file_id=cloud_file.id) }}";
+
+        // 创建一个隐藏的input元素，将LocalStorage数据作为值
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'privatekey';
+        input.value = localStorageData;
+
+        // 将input元素添加到表单中
+        form.appendChild(input);
+
+        //// 将表单添加到页面，并实际提交
+        document.body.appendChild(form);
+        form.submit();
+    }
+    </script>

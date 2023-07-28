@@ -126,7 +126,7 @@ class CloudFile(db.Model):
 
         symmetric_key = security_code.symmetric_generate()
         encrypted_content = security_code.symmetric_encode(content_bytes_,symmetric_key)
-
+        encrypted_content_bytes=security_code.tuple_to_bytes(encrypted_content)
         cloud_file = CloudFile(user_id=user_id,file_name=file_name_,
                                file_save_name=file_name_hash,file_hash=file_hash_,file_size=file_size_)
         db.session.add(cloud_file)
@@ -134,7 +134,7 @@ class CloudFile(db.Model):
         save_path = os.path.join(app.config['UPLOAD_FOLDER'],file_name_hash)
 
         with open(save_path, 'wb') as f:  # 保存 文件 & 加密后的文件
-            f.write(encrypted_content)
+            f.write(encrypted_content_bytes)
 
         #对称密钥使用所有用户的公钥加密，保存到路径seesionkey/filename
         users=User.query.all()
@@ -184,11 +184,26 @@ class CloudFile(db.Model):
         #user = db.session.get(User, self.user_id)
         #assert user is not None, "Error! user_id must be valid"
 
+        encrypted_content_tuple=security_code.bytes_to_tuple(encrypted_content_bytes)
         # 对文件进行解密
         session_key = decrypted_session_key
-        decrypted_content_bytes = security_code.symmetric_decode(encrypted_content_bytes,session_key)
+        
+        decrypted_content_bytes = security_code.symmetric_decode(encrypted_content_tuple,session_key)
 
         return decrypted_content_bytes
+
+
+    def file_encrypt(self) -> bytes:
+        """对文件内容不进行解密直接下载"""
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], self.file_save_name)
+
+        with open(file_path, "rb") as f:
+            encrypted_content_bytes = f.read()
+            
+        #user = db.session.get(User, self.user_id)
+        #assert user is not None, "Error! user_id must be valid
+
+        return encrypted_content_bytes
 
 
     def get_size_str(self) -> str:
