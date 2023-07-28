@@ -13,6 +13,7 @@ import security_code
 @app.route('/', methods=['GET'])
 def index():
     user_cloud_files = CloudFile.query.order_by(CloudFile.timestamp.desc()).all()
+
     if current_user.is_authenticated==False:
         """如果是匿名用户，所有文件都只能下载密文"""
         return render_template('index.html', user_cloud_files=user_cloud_files)
@@ -80,9 +81,11 @@ def uploads():
                 flash(message)
                 return message, 400
 
-            CloudFile.upload2cloud(current_user.id,file_name, content_bytes)
-
-            flash('Your file has been uploaded successfully.')
+            ifup=CloudFile.upload2cloud(current_user.id,file_name, content_bytes)
+            if(ifup==True):
+                flash('Your file has been uploaded successfully.')
+            else:
+                flash('Your file has been uploaded previously.')
             return redirect(url_for('index'))
 
     return redirect(url_for('index'))
@@ -528,10 +531,8 @@ def shared_file_download():
     shared_file_info.used_download_count += 1
     db.session.commit()
 
-    decrypted_content_bytes = cloud_file.file_encrypt()
-
     return send_file(
-        path_or_file=BytesIO(decrypted_content_bytes),
-        download_name=cloud_file.file_name,
+        path_or_file=BytesIO(cloud_file.file_encrypt()),
+        download_name=cloud_file.file_name+".encrypt",
         as_attachment=True,
     )
