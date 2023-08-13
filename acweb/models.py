@@ -145,7 +145,7 @@ class CloudFile(db.Model):
 
         import hashlib
 
-        file_hash_ = hashlib.sha256(content_bytes_).hexdigest()
+        file_hash_ = hashlib.sha256(content_bytes_ + bytes(str(user_id), encoding='utf8')).hexdigest()
         # 对文件进行安全 hash
 
         file_save_name = file_hash_ # 保存文件时的文件名
@@ -162,8 +162,9 @@ class CloudFile(db.Model):
         db.session.add(cloud_file)
         db.session.commit()
 
-        with open(save_path, 'wb') as f:  # 保存 文件 & 加密后的文件
-            f.write(encrypted_content_bytes)
+        if not os.path.exists(save_path):
+            with open(save_path, 'wb') as f:  # 保存 文件 & 加密后的文件
+                f.write(encrypted_content_bytes)
 
         return cloud_file
     

@@ -21,6 +21,7 @@ class TestUser():
     def __init__(self,username: str, password:str):
         self.username = username
         self.password = password
+        self.db_id = None
 
     def login(self, client):
         response = client.post('/login', data=dict(
@@ -76,6 +77,8 @@ class AcWebTestCase(unittest.TestCase):
             user.set_password(self.test_user1.password)
             db.session.add(user)
             db.session.commit()
+
+            self.test_user1.db_id = user.id
 
             self.test1_file_content = os.urandom(16)
             # 测试文件的二进制明文内容
@@ -404,7 +407,7 @@ class AcWebTestCase(unittest.TestCase):
         with app.test_request_context():
             import hashlib
             cloud_file = CloudFile.query.get(self.testuser1_cloud_file_id)
-            self.assertEqual(cloud_file.file_hash, hashlib.sha256(self.test1_file_content).hexdigest())
+            self.assertEqual(cloud_file.file_hash, hashlib.sha256(self.test1_file_content + bytes(str(self.test_user1.db_id), encoding='utf8')).hexdigest())
 
 if __name__ == '__main__':
     unittest.main()
